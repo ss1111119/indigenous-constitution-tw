@@ -1,0 +1,33 @@
+# 相依套件
+node_modules/
+dist/
+.vite/
+
+# 作業系統與編輯器
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# 大型原始檔：政府下載的 XLSX / Shapefile / GeoPackage
+# 原則是「原始檔可重新下載，就不入庫」，來源網址記在 data/sources.json
+data/raw/**/*.xlsx
+data/raw/**/*.xls
+data/raw/**/*.zip
+data/raw/**/*.shp
+data/raw/**/*.dbf
+data/raw/**/*.shx
+data/raw/**/*.prj
+data/raw/**/*.gpkg
+
+# 例外：無法重新下載者仍須入庫，否則驗算結果無從稽核。
+# 戶政司這份的下載連結由 JS 產生，頁面上沒有 <a href>，curl 直取不到，
+# 必須人工開瀏覽器點擊，因此上面那條規則的前提不成立。
+!data/raw/moi-year-end-population-by-sex-age.xls
+
+# 暫存
+*.log
+*.tmp
+.spectra/
+openspec/.vector-search.db*
