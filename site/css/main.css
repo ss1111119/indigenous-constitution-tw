@@ -445,3 +445,30 @@ main {
 
 .panel-explainer p { margin: 0 0 0.7rem; }
 .panel-explainer p:last-child { margin-bottom: 0; }
+
+/* 外連區塊。可行性研究 D 節：凡是中研院已經做的一律外連而非重做，
+   本站的價值在整合與計算，不在畫圖比美。 */
+.external-links {
+  max-width: 46rem;
+  margin: 1.5rem 0 0;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9375rem;
+}
+
+.external-links h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.external-links ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text-muted);
+}
+
+.external-links li { margin-bottom: 0.5rem; }
+.external-links li:last-child { margin-bottom: 0; }
