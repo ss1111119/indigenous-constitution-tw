@@ -63,6 +63,52 @@ python -m http.server 8765 -d _site   # 開 http://127.0.0.1:8765/
 2. 資料不足處明確標記為 **Data Gap / 資料缺口**，不自行推估成官方數字。
 3. 每個呈現在網站上的數字，都要能在 `data/sources.json` 追到來源。
 
+## 授權
+
+這個庫裡有四類權利狀態不同的東西，**不能用一句話一起宣告**。
+
+### 1. 本專案自行撰寫的程式碼與文件 — MIT
+
+`scripts/`、`site/css/`、`site/js/`、`site/index.html`，以及 `docs/` 與 `openspec/` 下的文件。
+全文見 [`LICENSE`](LICENSE)。
+
+### 2. `data/raw/` — 不是本專案的，無法由本專案授權
+
+政府原始下載檔，未做任何修改。本專案對其**不持有權利、不能代為授權**。
+每個檔案的再散布條款逐一記錄在 [`data/sources.json`](data/sources.json) 的 `license`
+與 `reusable` 欄位。
+
+目前的狀態：
+
+| 來源 | 再散布 |
+| --- | --- |
+| 內政部戶政司、data.gov.tw 各資料集 | 政府資料開放授權條款第 1 版，允許 |
+| 原民會開放資料平臺（`data.cip.gov.tw`） | 原住民族委員會開放資料使用規範 1.0 版，允許 |
+| **原民會月報 6 檔**（`cip-11506-*.xls`，取自主站 `www.cip.gov.tw`） | **`reusable: unknown`** |
+
+那 6 檔的來源站台只有著作權聲明，允許「在合理範圍內」重製、公開傳輸並註明出處，
+但「合理範圍」未定義，是否涵蓋逐字再散布完整檔案無法從條款本身確定。
+本專案據該條款將其納入公開版本庫，並在 `sources.json` 中把**這個決定記為專案自身的判斷**，
+與提供者的授權分開陳述。**要再散布這 6 檔的人請自行評估**，不要以本專案的做法為依據。
+
+### 3. `data/processed/` 與 `data/geo/` — 依原始來源條款
+
+由上述來源轉檔、聚合、簡化而來。數字本身是事實，不是本專案得以主張的財產；
+本專案對這些檔案不加額外限制，但**你的再利用仍受原始來源條款約束**，
+且請依 `sources.json` 標示來源。
+
+其中標記為 `derived-by-this-project` 的欄位是本專案的計算值而非官方發布的數字，
+引用時請照 `_fieldNature` 標明性質——這是資料原則第 1 條的要求。
+
+### 4. `site/vendor/` — 第三方函式庫，各依其授權
+
+| 檔案 | 授權 | 全文 |
+| --- | --- | --- |
+| `chart.umd.js` | MIT | [`site/vendor/LICENSE-chartjs.txt`](site/vendor/LICENSE-chartjs.txt) |
+| `leaflet.js`、`leaflet.css` | BSD-2-Clause | [`site/vendor/LICENSE-leaflet.txt`](site/vendor/LICENSE-leaflet.txt) |
+
+兩者的授權都要求再散布時保留授權聲明，故全文隨檔入庫。
+
 ## 立場聲明
 
 本專案為資料呈現與制度模擬，不代表任何政黨、政府機關或作者的政治立場。
