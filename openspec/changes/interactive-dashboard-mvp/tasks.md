@@ -36,7 +36,7 @@
 - [x] 5.3 平埔納入人口滑桿上限為 637,620，刻度標示 0 與 50,000 兩個有出處的參照點並註明其性質，無依據區間以視覺標示，且面板文案明述上限為參照點而非人口規模主張。驗證：滑桿上可見兩個標註參照點，0 標為官方現況、50,000 標為學術估計且註明僅涵蓋西拉雅族首年；文案含上限非主張的說明。涵蓋 Requirement: Population slider bounds are declared as reference points；實作 design 決策四：平埔納入人口滑桿上限為 637,620，並標註參照點。
 - [x] 5.4 模擬器以手寫 SVG 繪製議會席次圖，席次數量隨配置方式與保障席次變動；提供可展開的固定假設說明、政治參與形式尚未由法律決定的陳述，且任何配置皆不標示為建議或預期。驗證：增額模式下席次方塊總數隨總席次改變；展開假設後可見兩項固定假設與法律未決陳述；全頁文案不含建議或預期字樣。涵蓋 Requirement: Fixed assumptions are stated and inspectable、Requirement: Present outputs as arithmetic, not advocacy、Requirement: State that seat allocation for plains groups is undetermined。
 - [x] 5.5 模擬器以人口為分母呈現代表性落差，並提供選舉人為分母的替代檢視，切換時說明當前使用的基數且指出兩者結果不同、此選擇並非中立。驗證：2024 年資料下人口基數顯示 2.51%、選舉人基數顯示 2.25%，切換後介面標示當前基數。涵蓋 Requirement: Report both population and elector bases。
-- [ ] 5.6 模擬器上方呈現法制時間軸，列出憲判 111年憲判字第17號言詞辯論與宣示、身分法三讀與公布、第 23 條期限五個節點，各節點含日期與一手來源連結，並標示各里程碑距其法定期限的間隔。驗證：時間軸顯示 2022-10-28 宣示、2025-10-17 三讀標示距期限 11 天、2025-10-23 公布標示距期限 5 天、2028-10-23 為第 23 條期限；五個節點皆可點擊至法規資料庫或憲法法庭原文。涵蓋 Requirement: Present the legal timeline that makes seat allocation an open question。
+- [x] 5.6 模擬器上方呈現法制時間軸，列出憲判 111年憲判字第17號言詞辯論與宣示、身分法三讀與公布、第 23 條期限五個節點，各節點含日期與一手來源連結，並標示各里程碑距其法定期限的間隔。驗證：時間軸顯示 2022-10-28 宣示、2025-10-17 三讀標示距期限 11 天、2025-10-23 公布標示距期限 5 天、2028-10-23 為第 23 條期限；五個節點皆可點擊至法規資料庫或憲法法庭原文。涵蓋 Requirement: Present the legal timeline that makes seat allocation an open question。
 
 ## 6. 溯源介面
 

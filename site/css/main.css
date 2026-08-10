@@ -698,3 +698,82 @@ fieldset.sim-control { margin: 0; }
 }
 
 .sim-undetermined strong { color: var(--text); }
+
+/* --- 法制時間軸 --- */
+
+.timeline {
+  max-width: 46rem;
+  margin: 0 0 2rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.timeline h3 { margin: 0 0 1rem; font-size: 1.05rem; }
+
+.tl-list {
+  margin: 0;
+  padding: 0 0 0 1.1rem;
+  list-style: none;
+  /* 貫穿各節點的軸線 */
+  border-left: 2px solid var(--border);
+}
+
+.tl-item {
+  position: relative;
+  padding: 0 0 1.1rem 1rem;
+}
+
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -1.42rem;
+  top: 0.45rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface);
+}
+
+/* 未來的節點用空心，與已發生的事實區別——
+   2028 年的期限還沒到，不該和已成立的事實長得一樣。 */
+.tl-future::before {
+  background: var(--surface);
+  border-color: var(--gap-warn);
+}
+
+.tl-item time {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tl-title { margin: 0.1rem 0 0.25rem; font-weight: 600; }
+.tl-text { margin: 0; font-size: 0.9375rem; color: var(--text-muted); }
+
+.tl-gap,
+.tl-deadline {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.02em 0.5em;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.tl-gap { background: var(--accent-soft); color: var(--gap-warn); }
+.tl-deadline { border: 1px solid var(--border); color: var(--text-muted); }
+
+.tl-note {
+  margin: 0.5rem 0 0;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg);
+  border-left: 3px solid var(--gap-warn);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.tl-note strong { color: var(--text); }

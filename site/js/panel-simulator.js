@@ -134,6 +134,87 @@ function hemicycle(indigenous, regional, other, t) {
   </svg>`;
 }
 
+/* 法制時間軸。
+ *
+ * 這一段在四面板改版時一度掉了——原本是可行性研究 F 節的獨立區塊，
+ * 轉成儀表板後沒有對應的位置。併入模擬器是對的：時間軸的作用本來就是
+ * 解釋「席次問題為何是待決事項」，跟模擬器是同一個論述。
+ *
+ * 每個節點都連到一手來源。距期限的間隔是重點——上一次立法逼到剩 5 天，
+ * 這件事說明立法是被憲法期限推著走的，也預示 2028 年那次可能同樣拖到最後。
+ */
+const TIMELINE = [
+  {
+    date: '2022-06-28',
+    title: '憲法法庭言詞辯論',
+    body: '111 年憲判字第 17 號（西拉雅族原住民身分案）。',
+    href: 'https://cons.judicial.gov.tw/docdata.aspx?fid=38&id=310021',
+  },
+  {
+    date: '2022-10-28',
+    title: '憲判 17 號宣示，三年期限起算',
+    body: '認定原住民身分法第 2 條未涵蓋其他臺灣原住民族，違反憲法第 22 條，'
+      + '命相關機關於 3 年內修法或另定特別法。⚠️ 判決聚焦身分認定，未觸及政治參與或席次。',
+    href: 'https://cons.judicial.gov.tw/docdata.aspx?fid=38&id=310021',
+    deadline: '期限至 2025-10-28',
+  },
+  {
+    date: '2025-10-17',
+    title: '立法院三讀《平埔原住民族群身分法》',
+    body: '距憲法期限剩 11 天。',
+    href: 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0130053',
+    gap: '距期限 11 天',
+  },
+  {
+    date: '2025-10-23',
+    title: '總統公布施行，全文 24 條',
+    body: '距憲法期限剩 5 天。第 22 條使文化類權利立即適用；'
+      + '第 23 條把政治參與留給三年內的後續立法。',
+    href: 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0130053',
+    gap: '距期限 5 天',
+  },
+  {
+    date: '2026-07-30',
+    title: '行政院核定西拉雅族為第 17 族',
+    body: '平埔族群首例。身分登記自 2026 年 8 月中開始。另有 8 族已提出申請。',
+    href: 'https://www.cip.gov.tw/',
+  },
+  {
+    date: '2028-10-23',
+    title: '第 23 條立法期限',
+    body: '政府應於身分法施行後三年內，制定或修正相關法律保障平埔族群的'
+      + '政治參與、交通水利、衛生醫療、經濟土地及社會福利等權利。'
+      + '⚠️ 條文未指定政治參與的形式。',
+    href: 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0130053',
+    future: true,
+  },
+];
+
+function timelineMarkup() {
+  const items = TIMELINE.map((e) => `
+    <li class="tl-item${e.future ? ' tl-future' : ''}">
+      <time datetime="${e.date}">${e.date}</time>
+      <div class="tl-body">
+        <p class="tl-title">
+          <a href="${e.href}" rel="noopener" target="_blank">${e.title}</a>
+          ${e.gap ? `<span class="tl-gap">${e.gap}</span>` : ''}
+          ${e.deadline ? `<span class="tl-deadline">${e.deadline}</span>` : ''}
+        </p>
+        <p class="tl-text">${e.body}</p>
+      </div>
+    </li>`).join('');
+  return `
+    <section class="timeline">
+      <h3>為什麼席次是一個待決問題</h3>
+      <ol class="tl-list">${items}</ol>
+      <p class="tl-note">
+        上一次立法逼到距憲法期限剩 <strong>5 天</strong>才完成。
+        下一個期限是 <strong>2028 年 10 月 23 日</strong>，關於平埔族群政治參與的立法
+        目前尚未提出。各節點皆可點擊至全國法規資料庫或憲法法庭原文。
+      </p>
+    </section>`;
+}
+
 function anchorMarkup() {
   return ANCHORS.map((a) => `
     <div class="anchor" data-nature="${a.nature}">
@@ -390,6 +471,12 @@ function render(container, [popData, elections]) {
   root.querySelectorAll('input').forEach((el) => el.addEventListener('input', update));
   update();
 }
+
+export const timelinePanel = createPanel({
+  el: '[data-role="timeline"]',
+  sources: () => [],
+  render: (container) => { container.innerHTML = timelineMarkup(); },
+});
 
 export const simulatorPanel = createPanel({
   el: '[data-role="simulator"]',
