@@ -778,6 +778,31 @@ fieldset.sim-control { margin: 0; }
   border-radius: 0;
 }
 
+/* 固定假設第 2 條的量化對照。縮排並加左標線，表示它從屬於該條假設，
+   而不是與其他兩條假設並列的第四項。 */
+.sim-contrast {
+  margin: 0.7rem 0 0;
+  padding: 0.6rem 0 0.6rem 0.9rem;
+  border-left: 3px solid var(--border);
+}
+
+.sim-contrast-head {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sim-contrast ul { margin: 0; padding-left: 1.2rem; }
+.sim-contrast li { margin-bottom: 0.45rem; color: var(--text-muted); }
+.sim-contrast li strong { color: var(--text); }
+
+.sim-contrast-note {
+  margin: 0.6rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
 .sim-assumptions ol { margin: 0.9rem 0 0; padding-left: 1.3rem; }
 .sim-assumptions li { margin-bottom: 0.7rem; color: var(--text-muted); }
 .sim-assumptions li strong { color: var(--text); }

@@ -241,7 +241,46 @@ function theme() {
   return { dark, context: dark ? '#6b675c' : '#a09a8f' };
 }
 
-function render(container, [popData, elections]) {
+/* 固定假設第 2 條的量化對照。
+ *
+ * 為什麼需要：那條假設說「平埔族群是併入現行兩類、自成第三類、或另有安排，法律未定」，
+ * 但本模擬器的算式採用其中一種（併入 6 席共同分攤），而那恰好是三者中效果最小的。
+ * 只用文字說「法律未定」，讀者無從知道這個選擇改變了多少答案。
+ *
+ * 平埔族群按定義是【平地】原住民，因此「全部落在平原 3 席」不是三個選項中最牽強的，
+ * 可能還是最自然的。以本站採用的 5 萬人推估計算，兩者的每席選民增幅差約兩倍。
+ *
+ * 用選舉人數而非人口數：席次分配的代表性比較在選舉人這個基數上才對得起來，
+ * 且 CEC 的分類選舉人數是官方統計。⚠️ 這裡把 5 萬【當作選舉人】加入，
+ * 是為了呈現兩種假設的相對差距，不是主張那 5 萬人都有投票權——
+ * 登記者中有多少人達投票年齡是未知數，這一點在下方文案中明說。
+ */
+function assumptionContrast(byCategory, plainsEstimate) {
+  const latest = Math.max(...byCategory.map((r) => r.年));
+  const pick = (k) => byCategory.find((r) => r.年 === latest && r.類別 === k);
+  const shan = pick('山原');
+  const ping = pick('平原');
+  if (!shan || !ping || !plainsEstimate) return null;
+
+  const bothSeats = shan.席次 + ping.席次;
+  const bothVoters = shan.選舉人數 + ping.選舉人數;
+  const perSeatNow = bothVoters / bothSeats;
+  const perSeatMerged = (bothVoters + plainsEstimate) / bothSeats;
+  const perSeatPingOnly = (ping.選舉人數 + plainsEstimate) / ping.席次;
+
+  return {
+    year: latest,
+    shanSeats: shan.席次,
+    pingSeats: ping.席次,
+    shanPerSeat: shan.每席選舉人數,
+    pingPerSeat: ping.每席選舉人數,
+    mergedPct: (perSeatMerged / perSeatNow - 1) * 100,
+    pingOnlyPct: (perSeatPingOnly / (ping.選舉人數 / ping.席次) - 1) * 100,
+    estimate: plainsEstimate,
+  };
+}
+
+function render(container, [popData, elections, byCategoryData]) {
   const t = theme();
   /* 全國現況。分子分母同一份資料、同一基準日——避免跨機關的口徑落差。 */
   let indigenousNow = 0;
@@ -250,6 +289,38 @@ function render(container, [popData, elections]) {
     indigenousNow += r.indigenous_total;
     populationNow += r.population_total;
   }
+
+  /* 固定假設第 2 條的量化對照。資料缺任一項就整段不顯示——寧可少一段說明，
+     也不要顯示算不完整的對照數字。 */
+  const estimateAnchor = ANCHORS.find((a) => a.nature === 'academic-estimate');
+  const contrast = assumptionContrast(byCategoryData?.data ?? [], estimateAnchor?.value);
+  const contrastMarkup = contrast ? `
+    <div class="sim-contrast">
+      <p class="sim-contrast-head">
+        這個選擇改變多少答案（以 ${contrast.year} 年選舉人數與
+        ${estimateAnchor.label}人推估計算）
+      </p>
+      <ul>
+        <li>
+          <strong>併入 6 席共同分攤</strong>——本模擬採用的算法。
+          每席原民選民增加 <span data-role="contrast-merged">${contrast.mergedPct.toFixed(1)}%</span>。
+        </li>
+        <li>
+          <strong>全部落在平原 ${contrast.pingSeats} 席</strong>——平埔族群按定義是平地原住民。
+          每席平原選民增加 <span data-role="contrast-ping">${contrast.pingOnlyPct.toFixed(1)}%</span>，
+          山原每席 ${fmt(Math.round(contrast.shanPerSeat))} 人不變。
+        </li>
+        <li>
+          <strong>自成第三類</strong>——需要新的席次數，現行 ${contrast.shanSeats + contrast.pingSeats} 席不變。
+        </li>
+      </ul>
+      <p class="sim-contrast-note">
+        三者都在法律的可能範圍內，本站無從判斷何者會成立；列出來是因為
+        <strong>選哪一個會讓答案差約兩倍</strong>，而模擬器只能採用其中一種。
+        ⚠️ 此對照把推估人數當作選舉人計算，僅為呈現兩種假設的相對差距——
+        登記者中有多少人達投票年齡是未知數，見上方「代表性的分母」切換至選舉人時的說明。
+      </p>
+    </div>` : '';
 
   const root = document.createElement('div');
   root.className = 'sim';
@@ -354,6 +425,7 @@ function render(container, [popData, elections]) {
           <strong>不另立席次類別，平埔族群併入現行原住民保障席次。</strong>
           現行制度分山地原住民、平地原住民各 3 席。平埔族群是併入這兩類、
           自成第三類、或另有安排，法律未定。
+          ${contrastMarkup}
         </li>
         <li>
           <strong>「113 席內重分配」時席次從區域立委移轉。</strong>
@@ -374,6 +446,26 @@ function render(container, [popData, elections]) {
     </details>
   `;
   container.append(root);
+
+  /* 對照的兩個百分比是本站計算值，掛上溯源。基底資料為 CEC 的分類選舉人數，
+     故 sourceId 取自該檔；性質為 derived-by-this-project——官方從未發布過
+     「若平埔族群落在某一類，每席選民會增加多少」這個數字。 */
+  if (contrast) {
+    const attach = (role, field, value) => {
+      const el = root.querySelector(`[data-role="${role}"]`);
+      if (!el) return;
+      el.textContent = '';
+      el.append(traceable(value, {
+        sourceId: byCategoryData._sourceId,
+        field,
+        nature: 'derived-by-this-project',
+      }));
+    };
+    attach('contrast-merged', '併入 6 席時每席原民選民增幅',
+      `${contrast.mergedPct.toFixed(1)}%`);
+    attach('contrast-ping', `全部落在平原 ${contrast.pingSeats} 席時每席平原選民增幅`,
+      `${contrast.pingOnlyPct.toFixed(1)}%`);
+  }
 
   const plainsInput = root.querySelector('#sim-plains');
   const seatsInput = root.querySelector('#sim-seats');
@@ -574,6 +666,9 @@ export const simulatorPanel = createPanel({
   sources: () => [
     'processed/population-by-county.json',
     'processed/legislative-representation.json',
+    /* 山原／平原分項。合併後的 legislative-representation 看不出兩者是【各自】
+       3 席的獨立選區，而固定假設第 2 條正好說那個區分在法律上未定。 */
+    'processed/election-by-category.json',
   ],
   render,
 });
