@@ -25,7 +25,7 @@
 - [x] 4.1 人口面板顯示選定範圍的族別人口，含未申報族別，使各組成加總等於原住民合計。驗證：全國範圍下，16 族加 10 個平埔族群加未申報三者加總為 637,620。涵蓋 Requirement: Population panel shows tribe composition and geographic distribution。
 - [x] 4.2 人口面板顯示下一層級行政區的原住民人口比例分佈圖，且在鄉鎮層級標示哪些屬於原住民族地區。驗證：全國範圍顯示 22 縣市；選定花蓮縣後顯示其鄉鎮，且原住民族地區鄉鎮與其他鄉鎮在視覺上可區辨。涵蓋 Requirement: Population panel distinguishes indigenous districts。
 - [x] 4.3 選舉面板顯示第 7 至 11 屆的山原、平原、區域三類投票率，以及每席區域選民對每席原住民選民的倍數差距，並說明原住民席次為憲法固定數額、區域席次依人口比例分配。驗證：2008 年倍數顯示 4.29、2024 年顯示 3.57，且面板上可見該制度說明文字。涵蓋 Requirement: Election panel shows turnout and representation gap over time、Requirement: Election panel explains the institutional cause of the converging ratio。
-- [ ] 4.4 土地面板顯示保留地總面積、國有與私有面積的逐年變化，缺少年度處斷線；選定無保留地資料的縣市時顯示該縣市無原住民保留地的說明而非空白或零。驗證：全國範圍下民國 108 與 109 年處為斷線；選定新竹市後面板顯示無保留地說明且未繪出暗示零測量值的圖形。涵蓋 Requirement: Land panel shows ownership composition over time、Requirement: Land panel states when a county has no reserved land；實作 design 決策五：土地面板以所有權變遷為主。
+- [x] 4.4 土地面板顯示保留地總面積、國有與私有面積的逐年變化，缺少年度處斷線；選定無保留地資料的縣市時顯示該縣市無原住民保留地的說明而非空白或零。驗證：全國範圍下民國 108 與 109 年處為斷線；選定新竹市後面板顯示無保留地說明且未繪出暗示零測量值的圖形。涵蓋 Requirement: Land panel shows ownership composition over time、Requirement: Land panel states when a county has no reserved land；實作 design 決策五：土地面板以所有權變遷為主。
 - [ ] 4.5 人口面板提供外連至既有的人口分布視覺化、遷徙與部落點位資源，不在站內重製。驗證：人口面板可見至少三個外連，且連結指向可正常存取的網址。涵蓋 Requirement: Link to external work rather than reproducing it。
 - [ ] 4.6 頁面首次渲染僅請求縣市圖資，鄉鎮圖資延後至下鑽時載入；任一面板資料載入失敗時該面板顯示錯誤訊息與來源網址，其餘面板正常運作。驗證：以瀏覽器開發者工具確認初次載入未請求鄉鎮圖資；將任一面板的資料檔改名後重載，確認僅該面板顯示錯誤、其餘面板正常。涵蓋 Requirement: Load township geometry only when needed、Requirement: Isolate panel data failures。（原編為 3.3，因兩項驗收都需要有面板實際載入資料與圖資，而那是本組的工作，故移至此處。任務依「何時驗得起來」分組，比依概念層次分組對實作者更有用。）
 

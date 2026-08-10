@@ -9,6 +9,7 @@ import { initRegionSelector, bindScopeLabel } from './region.js';
 import { populationPanel } from './panel-population.js';
 import { mapPanel } from './panel-map.js';
 import { turnoutPanel, ratioPanel } from './panel-election.js';
+import { landPanel } from './panel-land.js';
 
 async function main() {
   try {
@@ -36,6 +37,8 @@ async function main() {
      它會忽略傳入的 region，資料本身就沒有行政區維度。 */
   onRegionChange(turnoutPanel);
   onRegionChange(ratioPanel);
+
+  onRegionChange(landPanel);
 }
 
 /* 分頁切換後，重算剛顯示出來的面板中的圖表版面。
