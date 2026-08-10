@@ -430,3 +430,18 @@ main {
   .tabs label { padding: 0.5rem 0.7rem; font-size: 0.9375rem; }
   .site-header { padding-top: 1.5rem; }
 }
+
+/* 圖表旁的制度說明。不是裝飾文字——沒有它，讀者會把倍數收斂
+   誤讀為「代表性正在改善」，實際上是超額代表被人口成長稀釋。 */
+.panel-explainer {
+  max-width: 46rem;
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9375rem;
+}
+
+.panel-explainer p { margin: 0 0 0.7rem; }
+.panel-explainer p:last-child { margin-bottom: 0; }
