@@ -10,6 +10,7 @@
  */
 
 import { createPanel, fmt } from './panel.js';
+import { DATA_BASE } from './state.js';
 
 /* sequential 藍色階（palette.md）。固定級距而非分位數：
    分位數會讓同一個顏色在不同層級代表不同數值，跨層級比較就失效了。
@@ -122,7 +123,10 @@ async function render(container, [popData], region) {
   heading.textContent = countyCode ? `${region.name.slice(0, 3)}各鄉鎮原住民人口比例` : '各縣市原住民人口比例';
   container.append(heading);
 
-  const geo = await fetch(`../data/${geoPath}`).then((r) => {
+  /* 這裡不走 loadData()：圖資只在下鑽時用一次，放進 state.js 的資料快取
+     會把最大的幾個檔案一直留在記憶體。但路徑基底仍用共享的 DATA_BASE，
+     不自寫字面值。 */
+  const geo = await fetch(`${DATA_BASE}/${geoPath}`).then((r) => {
     if (!r.ok) throw new Error(`${geoPath} 載入失敗（HTTP ${r.status}）`);
     return r.json();
   });

@@ -3,6 +3,10 @@ node_modules/
 dist/
 .vite/
 
+# 發佈組建產物。由 scripts/build-site.py 從 site/ 與 data/ 組出，
+# 隨時可重建，且入庫會讓產物與原始碼有機會不同步。
+_site/
+
 # 作業系統與編輯器
 Thumbs.db
 desktop.ini

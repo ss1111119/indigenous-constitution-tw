@@ -44,9 +44,24 @@
       "reason": "《平埔原住民族群身分法》身分登記自 2026-08 中開始。2026-06 原民會月報總人口 637,620 仍為 16 族結構，不含西拉雅族。",
       "status_detail_20260809": "★ 本缺口現為【機器可讀】：戶政司 ODRP013 已有 indigenous_pingpu_total_m/_f 欄位、ODRP018 更已列出全部10個平埔族群欄位（含未申請的 hoanya 洪雅族），2026-06 值皆為 0。即官方已備好欄位、尚無人登記。",
       "threeStates": [
-        {"period": "～2025-10", "state": "欄位不存在", "meaning": "法律上還沒有這個身分", "render": "不得畫 0，應呈現為『無此資料』"},
-        {"period": "2025-11 起", "state": "欄位存在、值為 0", "meaning": "結構就緒、尚無人登記", "render": "顯示『尚無登記』，非空白或 N/A"},
-        {"period": "2026-08 中起", "state": "預期非零", "meaning": "登記開始", "render": "實線，標註『登記自 2026-08 起算』"}
+        {
+          "period": "～2025-10",
+          "state": "欄位不存在",
+          "meaning": "法律上還沒有這個身分",
+          "render": "不得畫 0，應呈現為『無此資料』"
+        },
+        {
+          "period": "2025-11 起",
+          "state": "欄位存在、值為 0",
+          "meaning": "結構就緒、尚無人登記",
+          "render": "顯示『尚無登記』，非空白或 N/A"
+        },
+        {
+          "period": "2026-08 中起",
+          "state": "預期非零",
+          "meaning": "登記開始",
+          "render": "實線，標註『登記自 2026-08 起算』"
+        }
       ],
       "fieldBirthDate": "民國114年11月（2025-11）——二分搜尋實測 11410 無、11411 有。身分法 2025-10-23 公布施行，戶政司下一期月報即加欄位。",
       "earliestAvailable": "2026-09",
@@ -55,7 +70,10 @@
       "surrogate": "第一年預估 5 萬人登記",
       "surrogateNature": "academic-estimate",
       "mustNotDo": "不得將『5萬人』推估填補此缺口並呈現為官方數字。登記為自願（原民會主秘王美蘋：『還是要按照個人意願回復身分』），故實際登記數與族群人口推估的落差不只是時間差，而是結構性的。圖表上登記數用實線、推估用虛線，並永遠標註『登記自 2026-08 起算』。⚠️ 官方欄位值為 0 時應顯示為『尚無登記』而非空白或 N/A——0 在此是有意義的官方事實，不是缺值。★★ 2025-10 以前欄位根本不存在，時間序列在該期間【不得畫 0】——把『法律上還不存在這個身分』畫成『有 0 個人』是錯的，這是最容易犯的呈現錯誤。★★ 各族認定要件是逐族客製、無統一標準（西拉雅採日治戶籍+教會洗禮紀錄；道卡斯限後壠五社），故『平埔族群人口』不會是依統一標準產生的數字，總數不確定性遠大於登記時間差。模擬器不得將各族人口簡單相加後當作單一權威數字呈現。",
-      "affects": ["population", "simulator"]
+      "affects": [
+        "population",
+        "simulator"
+      ]
     },
     {
       "id": "gap-tribe-by-age-crosstab",
@@ -80,7 +98,9 @@
       "surrogate": null,
       "surrogateNature": null,
       "mustNotDo": "不得將『平埔族群納入席次保障』描述為法律預定的結果。正確措辭：第23條要求三年內就政治參與立法但未指定形式，席次是其中一種可能。這是本站中立性的界線。",
-      "affects": ["simulator"]
+      "affects": [
+        "simulator"
+      ]
     },
     {
       "id": "gap-118-laws-list",
@@ -124,11 +144,13 @@
       "dataDate": "1946-2025 年底",
       "downloadedAt": "2026-08-09",
       "updateFrequency": "年",
-      "license": "待確認（快速下載頁未於檔案旁明示）",
-      "reusable": "unknown",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
       "api": false,
       "nature": "official-statistic",
-      "notes": "用途為驗證 CEC 人口口徑。結構為三列一組（計/男/女），西元年標在「男」列、總計在「計」列第4欄，解析時需取 year 列的前一列。頁面無 <a href>，curl 直取不到，自動化更新有障礙。【2026-08-09 更正】先前記載『戶政司資料須人工取得、方法B不可行』僅適用於本筆（ris.gov.tw 網頁快速下載頁）。戶政司的 opendata API 可自動化——見 moi-odrp013-11506。當時判定失敗的原因是 API 路徑參數用錯（{yyy} 應為 {yyymm}），非資料不存在。教訓：API 回『查無資料』不等於資料不存在，先確認參數格式再下結論。"
+      "notes": "用途為驗證 CEC 人口口徑。結構為三列一組（計/男/女），西元年標在「男」列、總計在「計」列第4欄，解析時需取 year 列的前一列。頁面無 <a href>，curl 直取不到，自動化更新有障礙。【2026-08-09 更正】先前記載『戶政司資料須人工取得、方法B不可行』僅適用於本筆（ris.gov.tw 網頁快速下載頁）。戶政司的 opendata API 可自動化——見 moi-odrp013-11506。當時判定失敗的原因是 API 路徑參數用錯（{yyy} 應為 {yyymm}），非資料不存在。教訓：API 回『查無資料』不等於資料不存在，先確認參數格式再下結論。 【2026-08-10 授權查證】原記『待確認（快速下載頁未於檔案旁明示）』：下載頁確實未於檔案旁標示，但戶政司「政府網站資料開放宣告」(https://www.ris.gov.tw/app/portal/133) 對全站資料宣告政府資料開放授權條款第1版，明文允許重製、改作、編輯、公開傳輸與再授權，不需另取書面授權，僅需標示來源，涵蓋本檔。故改記 reusable=true。",
+      "licenseUrl": "https://www.ris.gov.tw/app/portal/133",
+      "verification": "primary-source"
     },
     {
       "id": "siraya-baseline-20260809",
@@ -141,7 +163,9 @@
       "updateFrequency": "一次性",
       "nature": "compilation",
       "verification": "secondary-source",
-      "notes": "【2026-08-09 更正】原標 official-statistic 為誤：本檔 agency 為『本專案彙整』且檔內含『5萬人推估』(academic-estimate)，單值 nature 標籤蓋不住混合來源，違反 CLAUDE.md 第1條。改標 compilation，檔內須逐項標註。檔中官方事實部分（登記開放前戶籍人口為零）為 official-statistic；『5萬人』出自原民會主秘王美蘋 Akiku．Haisum 轉述專家學者評估（中央社 2026-07-30），為 academic-estimate。記錄的『戶籍人口為零』狀態於 2026-08 中失效且無法回溯重建。"
+      "notes": "【2026-08-09 更正】原標 official-statistic 為誤：本檔 agency 為『本專案彙整』且檔內含『5萬人推估』(academic-estimate)，單值 nature 標籤蓋不住混合來源，違反 CLAUDE.md 第1條。改標 compilation，檔內須逐項標註。檔中官方事實部分（登記開放前戶籍人口為零）為 official-statistic；『5萬人』出自原民會主秘王美蘋 Akiku．Haisum 轉述專家學者評估（中央社 2026-07-30），為 academic-estimate。記錄的『戶籍人口為零』狀態於 2026-08 中失效且無法回溯重建。 【2026-08-10 補記】部署前授權盤點時發現本筆缺 license 與 reusable 欄位。本檔為本專案自行撰寫之彙整，非下載所得，故專案自身得再散布；檔內引述之新聞與談話其權利仍屬原始來源，引用時已標註出處。",
+      "license": "本專案自行彙整；檔內引述之第三方內容，其權利屬各原始來源",
+      "reusable": "true"
     },
     {
       "id": "constitution-amendment-art4",
@@ -197,12 +221,13 @@
       "dataDate": "2026-06",
       "downloadedAt": "2026-08-09",
       "updateFrequency": "月",
-      "license": "待確認——頁尾僅有『2021 © 原住民族委員會版權所有』概括聲明，無開放授權條款；與 data.gov.tw 上原民會資料集的『政府資料開放授權條款第1版』不同，不可互相套用",
+      "license": "非開放授權。原民會全球資訊網「政府網站資料開放宣告」：網站內容受著作權法保護，以本會名義公開發表之著作「在合理範圍內，得重製、公開播送或公開傳輸」並註明出處；其餘應取得本會同意或授權。未指名政府資料開放授權條款。",
       "reusable": "unknown",
       "api": false,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "6個檔案：縣市/鄉鎮 × (族別|年齡) × 性別，另有原住民族地區人口與都市非都市比。總人口 637,620（男308,451+女329,169 自我驗證通過）。⚠️ 不含西拉雅族，本期仍為16族結構——這是第17族出現前的最後一期乾淨快照。⚠️ 族別與年齡是兩組獨立二維交叉，無三維交叉，見 gap-tribe-by-age-crosstab。⚠️ 與 cec-votedata 的原住民人口(2024年588,660)口徑與時點皆不同，不可畫在同一張圖。【2026-08-09 角色調整】本筆已由主來源降為【交叉驗證來源】，主來源改為戶政司 ODRP018/ODRP013——後者在地理層級（村里 vs 鄉鎮）、族別數（26 vs 16）、平埔欄位、可自動化、歷史涵蓋、授權明確度各方面均優。本筆不移除：獨立機關的交叉驗證有價值，且 XLS 快照已入庫。【歷史期數結案】不可批次下載：頁面 49 頁分頁、各期連結為 16 位隨機英數 ID（如 C782A9E0C4FE437E4089F2DA81972A1C），無規律不可由期數推導，只能逐頁翻逐期點。此限制已不影響專案，因追蹤改用 ODRP API。"
+      "notes": "6個檔案：縣市/鄉鎮 × (族別|年齡) × 性別，另有原住民族地區人口與都市非都市比。總人口 637,620（男308,451+女329,169 自我驗證通過）。⚠️ 不含西拉雅族，本期仍為16族結構——這是第17族出現前的最後一期乾淨快照。⚠️ 族別與年齡是兩組獨立二維交叉，無三維交叉，見 gap-tribe-by-age-crosstab。⚠️ 與 cec-votedata 的原住民人口(2024年588,660)口徑與時點皆不同，不可畫在同一張圖。【2026-08-09 角色調整】本筆已由主來源降為【交叉驗證來源】，主來源改為戶政司 ODRP018/ODRP013——後者在地理層級（村里 vs 鄉鎮）、族別數（26 vs 16）、平埔欄位、可自動化、歷史涵蓋、授權明確度各方面均優。本筆不移除：獨立機關的交叉驗證有價值，且 XLS 快照已入庫。【歷史期數結案】不可批次下載：頁面 49 頁分頁、各期連結為 16 位隨機英數 ID（如 C782A9E0C4FE437E4089F2DA81972A1C），無規律不可由期數推導，只能逐頁翻逐期點。此限制已不影響專案，因追蹤改用 ODRP API。 【2026-08-10 授權查證】已查得實際條款（見 license 與 licenseUrl）：主站 www.cip.gov.tw 與開放資料平臺 data.cip.gov.tw 適用不同規範，本檔屬前者，不適用「原住民族委員會開放資料使用規範1.0版」。該宣告允許「在合理範圍內」重製與公開傳輸，但「合理範圍」未定義，是否涵蓋在公開版本庫中逐字再散布完整檔案，無法從條款本身確定，故 reusable 維持 unknown（依 CLAUDE.md 資料紀律第4條，不憑推論填為 true）。註：本檔為統計數表，是否具著作權法所稱原創性亦有疑問——若不構成著作，依該宣告「不得為著作權之標的者，任何人均得自由利用」。此為法律判斷，不在本專案自行認定之列。 【2026-08-10 再散布決定】本專案決定將本批檔案納入公開版本庫，依據為該宣告允許「在合理範圍內重製、公開播送或公開傳輸並註明出處」，出處已完整記於本筆。reusable 仍維持 unknown——這是本專案的判斷，不是原民會的授權宣告，兩者不可混為一談。若原民會表示不同意，處置方式為自版本庫移除（需重寫 git 歷史）。",
+      "licenseUrl": "https://www.cip.gov.tw/zh-tw/footer/E545056B78F702E38058FB779C868130/info.html"
     },
     {
       "id": "moi-odrp013-11506",
@@ -242,7 +267,7 @@
       "id": "cip-reserved-land-owner",
       "title": "原住民保留地按所有權別（A53000000A-113003）",
       "agency": "原住民族委員會",
-      "url": "https://data.gov.tw/dataset/112682",
+      "url": "https://data.cip.gov.tw/",
       "downloadUrl": "https://data.cip.gov.tw/API/v1/dump/datastore/A53000000A-113003",
       "format": "CSV",
       "dataDate": "民國107、110-113年",
@@ -253,7 +278,8 @@
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "民國113年：所有權部總計 265,766.858 公頃 / 596,023筆；私有 136,809.112；國有 128,762.884。⚠️ 口徑陷阱：(1)『26萬vs24萬公頃』的差異【並非】總面積與國有部分之別——國有僅12.9萬公頃，第一輪的推測已被本資料推翻，24萬的出處仍不明【待核實】；(2)筆數口徑與 A53000000A-108090 不同：所有權部596,023筆 vs 土地463,166筆，一筆土地可有多個所有權部，兩者不可互相取代；(3)民國107年缺『所有權部總計』列，須自行相加(147,498.430+117,291.994=264,790.424)並標為本專案計算值；(4)僅13個縣市有保留地，地圖空白縣市是『無保留地』非『資料缺漏』。趨勢：總面積幾乎不變但四年間約6,400公頃由國有轉私有，民國112年私有首度超過國有（黃金交叉）。★【格式陷阱：同一列內混用小數位數】來源在同一列中混用 2 位與 3 位小數，故組成加總不會恰好等於官方小計。例：113年臺中市 國有 5040.02（2位）+ 鄉有 5.289（3位）= 5045.309，但公有欄寫 5045.31。民國113年有 44 個值只到 2 位、39 個到 3 位，其餘年度以 3 位為主，故驗證失敗會集中在 113 年。scripts/build-land.ps1 採容差 0.05 公頃（≈4 個 2 位數值累積的四捨五入上限）而非要求相等；真正的資料錯誤會差好幾個數量級仍會被抓到。★ 民國107年除缺「所有權部總計」外，「其他單位」亦為空值，故該年推算總計（公有+私有=264,790.424）可能少計約 0-100 公頃（其他年度的其他單位介於 37-103 公頃）。輸出以 total_official 與 total_derived 兩欄分開表示，因 _fieldNature 是每欄一個值，無法表達同一欄在不同列有不同性質。"
+      "notes": "民國113年：所有權部總計 265,766.858 公頃 / 596,023筆；私有 136,809.112；國有 128,762.884。⚠️ 口徑陷阱：(1)『26萬vs24萬公頃』的差異【並非】總面積與國有部分之別——國有僅12.9萬公頃，第一輪的推測已被本資料推翻，24萬的出處仍不明【待核實】；(2)筆數口徑與 A53000000A-108090 不同：所有權部596,023筆 vs 土地463,166筆，一筆土地可有多個所有權部，兩者不可互相取代；(3)民國107年缺『所有權部總計』列，須自行相加(147,498.430+117,291.994=264,790.424)並標為本專案計算值；(4)僅13個縣市有保留地，地圖空白縣市是『無保留地』非『資料缺漏』。趨勢：總面積幾乎不變但四年間約6,400公頃由國有轉私有，民國112年私有首度超過國有（黃金交叉）。★【格式陷阱：同一列內混用小數位數】來源在同一列中混用 2 位與 3 位小數，故組成加總不會恰好等於官方小計。例：113年臺中市 國有 5040.02（2位）+ 鄉有 5.289（3位）= 5045.309，但公有欄寫 5045.31。民國113年有 44 個值只到 2 位、39 個到 3 位，其餘年度以 3 位為主，故驗證失敗會集中在 113 年。scripts/build-land.ps1 採容差 0.05 公頃（≈4 個 2 位數值累積的四捨五入上限）而非要求相等；真正的資料錯誤會差好幾個數量級仍會被抓到。★ 民國107年除缺「所有權部總計」外，「其他單位」亦為空值，故該年推算總計（公有+私有=264,790.424）可能少計約 0-100 公頃（其他年度的其他單位介於 37-103 公頃）。輸出以 total_official 與 total_derived 兩欄分開表示，因 _fieldNature 是每欄一個值，無法表達同一欄在不同列有不同性質。 【2026-08-10 授權查證】本檔取自原民會開放資料平臺 data.cip.gov.tw，該平臺適用「原住民族委員會開放資料使用規範1.0版」(https://data.cip.gov.tw/Home/Copyright.aspx)：允許自由利用（含商業與營利目的）、允許與其他資料結合或納入自身產品，須依提供者指定方式標示出處。⚠️ 這與 data.gov.tw 的「政府資料開放授權條款第1版」是不同的授權文件，不可互相代稱。 【2026-08-10 更正】url 原填 https://data.gov.tw/dataset/112682，但該資料集頁（原住民保留地筆數及面積）僅列 A53000000A-108090 的 JSON/XML/CSV 三個資源，不含本檔的 A53000000A-113003。本檔實際下載自 data.cip.gov.tw 的 dump API，data.gov.tw 上對應的資料集頁【待確認】。",
+      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx"
     },
     {
       "id": "cip-reserved-land-count-area",
@@ -271,7 +297,8 @@
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "民國112年：463,166筆 / 266,475.190公頃（13縣市）。民國108年441,860筆 = 第一輪引述的『43萬餘筆』來源。⚠️ 筆數口徑與 A53000000A-113003 不同，見該筆 notes。⚠️ 第一輪記載『年更新』有誤，實際為不定期更新。原民會窗口：邱冠儒 02-89953065 krc@apc.gov.tw"
+      "notes": "民國112年：463,166筆 / 266,475.190公頃（13縣市）。民國108年441,860筆 = 第一輪引述的『43萬餘筆』來源。⚠️ 筆數口徑與 A53000000A-113003 不同，見該筆 notes。⚠️ 第一輪記載『年更新』有誤，實際為不定期更新。原民會窗口：邱冠儒 02-89953065 krc@apc.gov.tw 【2026-08-10 授權查證】本檔取自原民會開放資料平臺 data.cip.gov.tw，該平臺適用「原住民族委員會開放資料使用規範1.0版」(https://data.cip.gov.tw/Home/Copyright.aspx)：允許自由利用（含商業與營利目的）、允許與其他資料結合或納入自身產品，須依提供者指定方式標示出處。⚠️ 這與 data.gov.tw 的「政府資料開放授權條款第1版」是不同的授權文件，不可互相代稱。",
+      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx"
     },
     {
       "id": "moi-county-boundary",
@@ -339,6 +366,60 @@
       "nature": "academic-estimate",
       "verification": "primary-source",
       "notes": "⚠️ 公開可見不等於可再利用。取得明確授權前不得使用。"
+    },
+    {
+      "id": "cip-reserved-land-total",
+      "title": "原住民保留地總面積（A53000000A-111007）",
+      "agency": "原住民族委員會",
+      "url": "https://data.cip.gov.tw/",
+      "downloadUrl": "https://data.cip.gov.tw/API/v1/dump/datastore/A53000000A-111007",
+      "format": "CSV",
+      "dataDate": "待確認",
+      "downloadedAt": "2026-08-09",
+      "updateFrequency": "不定期",
+      "license": "原住民族委員會開放資料使用規範1.0版",
+      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "primary-source",
+      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。⚠️ 資料期別與欄位口徑【待確認】——本檔目前未被任何 processed JSON 使用，若日後要用，需先確認其與 A53000000A-113003（所有權別）的面積口徑是否一致。"
+    },
+    {
+      "id": "cip-reserved-land-usage",
+      "title": "原住民保留地使用情形（A53000000A-113002）",
+      "agency": "原住民族委員會",
+      "url": "https://data.cip.gov.tw/",
+      "downloadUrl": "https://data.cip.gov.tw/API/v1/dump/datastore/A53000000A-113002",
+      "format": "CSV",
+      "dataDate": "待確認",
+      "downloadedAt": "2026-08-09",
+      "updateFrequency": "不定期",
+      "license": "原住民族委員會開放資料使用規範1.0版",
+      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "primary-source",
+      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。data.gov.tw 另有「全國原住民保留地使用情形」資料集 (https://data.gov.tw/dataset/130120，授權為政府資料開放授權條款第1版)，但該頁未列出 A53000000A 格式的資源識別碼，是否為同一份【待確認】。⚠️ 本檔目前未被任何 processed JSON 使用。"
+    },
+    {
+      "id": "cip-reserved-land-building-agri",
+      "title": "原住民保留地建築用地及農業用地（A53000000A-112054）",
+      "agency": "原住民族委員會",
+      "url": "https://data.cip.gov.tw/",
+      "downloadUrl": "https://data.cip.gov.tw/API/v1/dump/datastore/A53000000A-112054",
+      "format": "CSV",
+      "dataDate": "待確認",
+      "downloadedAt": "2026-08-09",
+      "updateFrequency": "不定期",
+      "license": "原住民族委員會開放資料使用規範1.0版",
+      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "primary-source",
+      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。⚠️ 標題依檔名推得，資料集正式名稱與期別【待確認】。⚠️ 本檔目前未被任何 processed JSON 使用。"
     }
   ]
 }

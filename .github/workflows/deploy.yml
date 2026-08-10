@@ -1,0 +1,59 @@
+# 組建靜態站並發佈到 GitHub Pages。
+#
+# 與本機預覽走同一支腳本、同一種目錄佈局（scripts/build-site.py → _site/），
+# 刻意不在這裡另寫複製或搬移邏輯——若 CI 自成一套，本機測得過就不再是
+# 線上跑得動的證據。見 openspec/changes/deploy-github-pages/design.md 決策二、決策五。
+#
+# 首次啟用需在 repo 的 Settings → Pages → Source 選擇 "GitHub Actions"。
+# 該設定不在版本庫中，無法由本檔保證。
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  # 允許不推 commit 也能重新發佈（例如確認 Pages 設定後想立刻重跑一次）。
+  workflow_dispatch:
+
+# 只給 Pages 部署所需的權限：讀原始碼、寫 Pages、取 OIDC token 供 deploy-pages 驗證。
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時只跑一個部署。不取消進行中的那個——中途取消會讓站台停在半完成狀態。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # 組建腳本只用標準函式庫，沒有 pip install 這一步。
+      # 缺任何一個必要資料來源時腳本會以非零狀態碼結束，job 隨之失敗，
+      # 後面的上傳與部署都不會執行——絕不發佈一個資料不全的站台。
+      - name: Build _site
+        run: python scripts/build-site.py
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
