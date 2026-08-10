@@ -125,6 +125,10 @@ processed JSON 的共同外層：
 
 `_fieldNature` 的值域限於 data/sources.json 的 schema.nature 所定義者。data 陣列中每列以 district_code 為鍵，縣市層級為 5 碼，鄉鎮層級為 8 碼。
 
+**一個 processed JSON 只能有一個 `_sourceId`**，因此來自不同 endpoint 的資料**分檔輸出**，不得併入同一檔。人口資料據此拆為 population-by-county（源自 ODRP013）與 tribes-by-county（源自 ODRP018），鄉鎮層級同理。併檔會迫使單一 sourceId 涵蓋兩個來源，即為本專案禁止的來源混用。
+
+`_fieldNature` 的分類判準見 data/sources.json 的 schema 內 natureRule 一欄：本專案計算值的定義是**官方從未發布過這個數字**，而非是否經過計算。原住民族人口雖需相加三欄才得到，但原民會月報有直接發布且已交叉驗證，故為官方統計。
+
 ### 失敗模式
 
 | 情境 | 行為 |

@@ -15,11 +15,12 @@
     "reusable": "是否允許再利用 (true | false | unknown)",
     "api": "是否有 API (true | false)",
     "nature": "official-statistic | academic-estimate | derived-by-this-project | historical-record | compilation（混合來源的彙整檔，檔內須逐項標註）",
+    "$natureRule": "判準：derived-by-this-project 的定義是【官方從未發布過這個數字】，不是【有沒有經過計算】。例：原住民族人口 637,620 雖需將 ODRP013 的山原/平原/平埔三欄相加才得到，但原民會月報有直接發布此數且本專案已逐一交叉驗證（男308,451/女329,169 相符），故為 official-statistic；反之人口占比 2.74%、每席代表選民數、倍數差距在任何官方文件中都不存在，故為 derived-by-this-project。用『有沒有計算』當判準會把三欄相加也算成本專案計算值，等於對著官方數字宣稱是自己算的，低估其權威性——方向錯得比標錯類別更嚴重。",
     "verification": "primary-source（親自讀到原始檔或法規原文） | secondary-source（僅新聞或搜尋摘要轉述） | unverified",
     "doi": "若有 DOI（如 OSF 資料集）",
     "notes": "口徑陷阱、已知缺漏、與其他資料集不一致之處"
   },
-  "$schemaStatus": "⚠️ 暫定（provisional），待 Spectra 定案。本檔於 2026-08-09 第二輪核實時新增 gaps[]、gapsSchema、verification 欄位與 nature 的 compilation 值。這些是【有設計取捨的資料結構決定】，依 CLAUDE.md 判準本應走 /spectra-propose，但當時在第一階段可行性研究的豁免範圍內直接做了。欄位內容源自實際調查發現（四個具體缺口）而非憑空設計，且目前尚無任何程式讀取本檔，改動成本為零。注意 gaps[].surrogate 決定前端遇到缺口時畫虛線或留白、affects 決定哪些區塊連動——這實質上已是前端契約。⇒ 此 schema 須列入 /spectra-discuss 議程，與 feasibility-study.md 的 F-2 節那六個『缺定義』政策參數一併拍板，定案前不得視為穩定介面。",
+  "$schemaStatus": "已定案（stable）。gaps[]、gapsSchema、verification 欄位與 nature 的 compilation 值經 /spectra-discuss 收斂、於 change interactive-dashboard-mvp 的 design.md 決策六確立，並由 tasks 1.1 落實。此後 gaps[].surrogate（決定前端畫虛線或留白）與 gaps[].affects（決定哪些面板連動）為前端契約，變更須經 Spectra change。",
   "$gapsComment": "Data Gap 登記。CLAUDE.md 第2條要求『資料不存在就標記 Data Gap』，但 sources 是『來源清單』，不存在的資料沒有來源可登記，故需此平行陣列。surrogate 欄位是關鍵：讓『有替代推估值』與『完全沒有數字』在資料層就分得開，前端據此決定畫虛線或留白。",
   "gapsSchema": {
     "id": "gap- 開頭",
@@ -31,7 +32,8 @@
     "surrogate": "可用的替代數字，無則 null",
     "surrogateNature": "替代數字的性質，無則 null",
     "mustNotDo": "明確寫出不可以拿什麼來填補",
-    "affects": "受影響的網站區塊"
+    "affects": "受影響的面板，值域限於 population | election | land | simulator。不影響任何 MVP 面板者為空陣列，理由寫在 outOfMvpScope。",
+    "outOfMvpScope": "當 affects 為空陣列時，說明此缺口為何不影響 MVP 面板；否則省略此欄。"
   },
   "gaps": [
     {
@@ -53,7 +55,7 @@
       "surrogate": "第一年預估 5 萬人登記",
       "surrogateNature": "academic-estimate",
       "mustNotDo": "不得將『5萬人』推估填補此缺口並呈現為官方數字。登記為自願（原民會主秘王美蘋：『還是要按照個人意願回復身分』），故實際登記數與族群人口推估的落差不只是時間差，而是結構性的。圖表上登記數用實線、推估用虛線，並永遠標註『登記自 2026-08 起算』。⚠️ 官方欄位值為 0 時應顯示為『尚無登記』而非空白或 N/A——0 在此是有意義的官方事實，不是缺值。★★ 2025-10 以前欄位根本不存在，時間序列在該期間【不得畫 0】——把『法律上還不存在這個身分』畫成『有 0 個人』是錯的，這是最容易犯的呈現錯誤。★★ 各族認定要件是逐族客製、無統一標準（西拉雅採日治戶籍+教會洗禮紀錄；道卡斯限後壠五社），故『平埔族群人口』不會是依統一標準產生的數字，總數不確定性遠大於登記時間差。模擬器不得將各族人口簡單相加後當作單一權威數字呈現。",
-      "affects": ["現況數字", "席次模擬器", "西拉雅登記追蹤"]
+      "affects": ["population", "simulator"]
     },
     {
       "id": "gap-tribe-by-age-crosstab",
@@ -65,7 +67,8 @@
       "surrogate": null,
       "surrogateNature": null,
       "mustNotDo": "不得以兩組二維表相乘或按比例分攤推估三維值。",
-      "affects": ["（MVP 不需要，第二階段若需族別年齡結構須另尋 TIPD 或專案申請）"]
+      "affects": [],
+      "outOfMvpScope": "MVP 不使用年齡維度，故不影響任何面板。第二階段若需族別年齡結構，須另尋中研院 TIPD 或向原民會專案申請。"
     },
     {
       "id": "gap-pingpu-political-participation-form",
@@ -77,7 +80,7 @@
       "surrogate": null,
       "surrogateNature": null,
       "mustNotDo": "不得將『平埔族群納入席次保障』描述為法律預定的結果。正確措辭：第23條要求三年內就政治參與立法但未指定形式，席次是其中一種可能。這是本站中立性的界線。",
-      "affects": ["席次模擬器", "時間軸"]
+      "affects": ["simulator"]
     },
     {
       "id": "gap-118-laws-list",
@@ -89,7 +92,8 @@
       "surrogate": null,
       "surrogateNature": null,
       "mustNotDo": "『118』兩說皆僅有新聞轉述、未見原始清單，不得列為官方統計。⚠️ 不得只採其中一說：杜張梅莊講的是『118條』（含行政命令、9月底）、王美蘋講的是『118種法律』（含憲法、年底），單位與時程都不同，數字巧合相同也可能是口誤或記者混用。⚠️『包含憲法在內』只出現在王美蘋一說，不可當成原民會定論。【自我更正紀錄】本專案第二輪曾誤將第一輪正確的杜張梅莊版本『更正』為王美蘋版本，錯因是只讀一篇來源就下更正。教訓：查到說法不同時應先問『是否兩者都存在』。",
-      "affects": ["第二階段：制度衝擊瀏覽"]
+      "affects": [],
+      "outOfMvpScope": "清單尚未公開（預計 2026 年底），MVP 不呈現。第二階段可做成制度衝擊的結構化瀏覽。"
     }
   ],
   "sources": [
@@ -232,7 +236,7 @@
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "★ 族別資料的主來源，各維度均優於原民會月報：村里層級7,771列（月報僅到鄉鎮）、26個族別欄位（月報16族）、API可自動化（月報連結為16位隨機ID不可推導）、涵蓋2018-01起逐月、授權明確。★★ 官方 schema 已列出全部10個平埔族群欄位：siraya西拉雅/ketagalan凱達格蘭/taokas道卡斯/pazeh巴宰/papora拍瀑拉/babuza巴布薩/hoanya洪雅/kaxabu噶哈巫/taivoan大武壠/makatau馬卡道，2026-06 值皆為0。⚠️ 洪雅族有欄位但不在9族申請名單中，原因待確認——官方對『平埔族群包含哪些族』的定義與申請名單不一致，席次模擬器讓使用者選『哪些族納入』時須處理此差異。⚠️ 另有 indigenous_undeclared 未申報族別 7,768 人，畫族別圓餅圖時不可省略否則加總不等於總數；原民會月報是否有對應欄位待確認。三方驗證通過：16族合計637,620 = indigenous_total = 原民會月報總數，六個主要族別逐一相符。⚠️ 與 ODRP015（年齡）仍是兩組獨立二維表，無年齡×族別交叉，見 gap-tribe-by-age-crosstab。"
+      "notes": "★ 族別資料的主來源，各維度均優於原民會月報：村里層級7,771列（月報僅到鄉鎮）、26個族別欄位（月報16族）、API可自動化（月報連結為16位隨機ID不可推導）、涵蓋2018-01起逐月、授權明確。★★ 官方 schema 已列出全部10個平埔族群欄位：siraya西拉雅/ketagalan凱達格蘭/taokas道卡斯/pazeh巴宰/papora拍瀑拉/babuza巴布薩/hoanya洪雅/kaxabu噶哈巫/taivoan大武壠/makatau馬卡道，2026-06 值皆為0。⚠️ 洪雅族有欄位但不在9族申請名單中，原因待確認——官方對『平埔族群包含哪些族』的定義與申請名單不一致，席次模擬器讓使用者選『哪些族納入』時須處理此差異。⚠️ 另有 indigenous_undeclared 未申報族別 7,768 人，畫族別圓餅圖時不可省略否則加總不等於總數；原民會月報是否有對應欄位待確認。三方驗證通過：16族合計637,620 = indigenous_total = 原民會月報總數，六個主要族別逐一相符。⚠️ 與 ODRP015（年齡）仍是兩組獨立二維表，無年齡×族別交叉，見 gap-tribe-by-age-crosstab。★★★【格式陷阱：pingpu_* 重複計算】本 endpoint 有兩組平行的族別結構，混加會重複計算：(A) 主清單 27 個 stem＝16 現行族(amis/atayal/paiwan/bunun/rukai/pinuyumayan/cou/saisiyat/yami/thao/kavalan/truku/sakizaya/sediq/hlaalua/kanakanavu) + 10 平埔族群 + undeclared，其 m+f 加總＝indigenous_total；(B) pingpu_total 加 11 個 pingpu_<族>（含 pingpu_kavalan、pingpu_undeclared），是【依平埔身分別的交叉表，不是額外的人】。⚠️ 2026-06 時平埔全為 0，故兩組怎麼加都得到 637,620，陷阱看不出來；平埔身分登記自 2026-08 中開始後才會浮現。轉檔一律只用主清單(A)，並以『族別加總＝indigenous_total』的自我驗證守住——scripts/build-population.ps1 已實作，驗證失敗即中止不產檔。任何要重寫此段解析的人都會再踩一次，故記錄於此而非僅程式註解。"
     },
     {
       "id": "cip-reserved-land-owner",

@@ -2,11 +2,11 @@
 
 ## 1. 資料契約與轉檔管線
 
-- [ ] 1.1 data/sources.json 脫離暫定狀態：移除 provisional 標記，將 gaps 陣列中 affects 欄位的值由舊的四區塊名稱改為四個面板名稱（population、election、land、simulator），並確認 nature 值域包含 compilation。驗證：以 JSON 解析器讀取無誤，且每個 gaps 項目的 affects 值皆屬於四個面板名稱之一。涵蓋 Requirement: Record data gaps in the registry。
-- [ ] 1.2 提供可重複使用的溯源注入函式，接受來源識別碼與欄位性質對照表，輸出帶有 _sourceId、_generatedBy、_generatedAt、_fieldNature 外層的 JSON；來源識別碼不存在於 data/sources.json 時中止並回報。驗證：以不存在的識別碼呼叫，確認中止且未產生檔案；以 moi-odrp018-11506 呼叫，確認外層四欄齊備。涵蓋 Requirement: Inject source identity and field nature at build time、Requirement: Reject unknown source identifiers；實作 design 決策六：轉檔時注入來源識別與欄位性質，以及 design 資料形狀一節。
-- [ ] 1.3 人口轉檔腳本接受民國年月參數，將 ODRP013 與 ODRP018 聚合為縣市層級 JSON，寫檔前驗證男加女等於合計、原住民加非原住民等於總計、族別加總等於原住民合計。驗證：以參數 11506 執行，全國總人口 23,243,565、原住民合計 637,620、16 族加總 637,620、10 個平埔欄位皆為 0。涵蓋 Requirement: Convert raw government files to aggregated JSON、Requirement: Accept a period parameter。
-- [ ] 1.4 人口轉檔腳本另產生鄉鎮層級 JSON，以 8 碼 district_code 為鍵，並標示哪些鄉鎮屬於原住民族地區。驗證：鄉鎮數量與來源村里聚合後一致，且鄉鎮層級各欄加總等於縣市層級對應值。涵蓋 Requirement: Convert raw government files to aggregated JSON；實作 design 決策二：地理層級為縣市加鄉鎮下鑽。
-- [ ] 1.5 人口轉檔腳本在任一自我驗證失敗時中止並回報差異數值，且不產生輸出檔案。驗證：暫時竄改一列來源資料使男加女不等於合計，確認腳本中止、回報差異、輸出檔未被建立或覆寫。涵蓋 Requirement: Self-validate before writing output；實作 design 失敗模式一節。
+- [x] 1.1 data/sources.json 脫離暫定狀態：移除 provisional 標記，將 gaps 陣列中 affects 欄位的值由舊的四區塊名稱改為四個面板名稱（population、election、land、simulator），並確認 nature 值域包含 compilation。驗證：以 JSON 解析器讀取無誤，且每個 gaps 項目的 affects 值皆屬於四個面板名稱之一。涵蓋 Requirement: Record data gaps in the registry。
+- [x] 1.2 提供可重複使用的溯源注入函式，接受來源識別碼與欄位性質對照表，輸出帶有 _sourceId、_generatedBy、_generatedAt、_fieldNature 外層的 JSON；來源識別碼不存在於 data/sources.json 時中止並回報。驗證：以不存在的識別碼呼叫，確認中止且未產生檔案；以 moi-odrp018-11506 呼叫，確認外層四欄齊備。涵蓋 Requirement: Inject source identity and field nature at build time、Requirement: Reject unknown source identifiers；實作 design 決策六：轉檔時注入來源識別與欄位性質，以及 design 資料形狀一節。
+- [x] 1.3 人口轉檔腳本接受民國年月參數，將 ODRP013 與 ODRP018 聚合為縣市層級 JSON，寫檔前驗證男加女等於合計、原住民加非原住民等於總計、族別加總等於原住民合計。驗證：以參數 11506 執行，全國總人口 23,243,565、原住民合計 637,620、16 族加總 637,620、10 個平埔欄位皆為 0。涵蓋 Requirement: Convert raw government files to aggregated JSON、Requirement: Accept a period parameter。
+- [x] 1.4 人口轉檔腳本另產生鄉鎮層級 JSON，以 8 碼 district_code 為鍵，並標示哪些鄉鎮屬於原住民族地區。驗證：鄉鎮數量與來源村里聚合後一致，且鄉鎮層級各欄加總等於縣市層級對應值。涵蓋 Requirement: Convert raw government files to aggregated JSON；實作 design 決策二：地理層級為縣市加鄉鎮下鑽。
+- [x] 1.5 人口轉檔腳本在任一自我驗證失敗時中止並回報差異數值，且不產生輸出檔案。驗證：暫時竄改一列來源資料使男加女不等於合計，確認腳本中止、回報差異、輸出檔未被建立或覆寫。涵蓋 Requirement: Self-validate before writing output；實作 design 失敗模式一節。
 - [ ] 1.6 土地轉檔腳本將保留地所有權別 CSV 轉為逐年 JSON，缺少年度不產生資料點且不做內插；民國 107 年缺所有權部總計列時自行相加並將該欄標為 derived-by-this-project。驗證：輸出含民國 107、110、111、112、113 五個年度且無 108、109；民國 113 年所有權部總計 265,766.858、國有 128,762.884。涵蓋 Requirement: Preserve gaps in time series。
 - [ ] 1.7 選舉轉檔腳本以自我驗證偵測各年度欄位版面，兩種版面皆無法通過驗證時中止而不套用預設版面；輸出帶溯源外層的 JSON，將既有 meta.derived 的中文散文改為欄位層級 _fieldNature 對照表。驗證：五屆資料全部通過版面偵測並記錄所用版面；每席選舉人數、倍數差距、人口占比、席次占比四欄性質為 derived-by-this-project。涵蓋 Requirement: Detect election data column layout。
 
@@ -36,6 +36,7 @@
 - [ ] 5.3 平埔納入人口滑桿上限為 637,620，刻度標示 0 與 50,000 兩個有出處的參照點並註明其性質，無依據區間以視覺標示，且面板文案明述上限為參照點而非人口規模主張。驗證：滑桿上可見兩個標註參照點，0 標為官方現況、50,000 標為學術估計且註明僅涵蓋西拉雅族首年；文案含上限非主張的說明。涵蓋 Requirement: Population slider bounds are declared as reference points；實作 design 決策四：平埔納入人口滑桿上限為 637,620，並標註參照點。
 - [ ] 5.4 模擬器以手寫 SVG 繪製議會席次圖，席次數量隨配置方式與保障席次變動；提供可展開的固定假設說明、政治參與形式尚未由法律決定的陳述，且任何配置皆不標示為建議或預期。驗證：增額模式下席次方塊總數隨總席次改變；展開假設後可見兩項固定假設與法律未決陳述；全頁文案不含建議或預期字樣。涵蓋 Requirement: Fixed assumptions are stated and inspectable、Requirement: Present outputs as arithmetic, not advocacy、Requirement: State that seat allocation for plains groups is undetermined。
 - [ ] 5.5 模擬器以人口為分母呈現代表性落差，並提供選舉人為分母的替代檢視，切換時說明當前使用的基數且指出兩者結果不同、此選擇並非中立。驗證：2024 年資料下人口基數顯示 2.51%、選舉人基數顯示 2.25%，切換後介面標示當前基數。涵蓋 Requirement: Report both population and elector bases。
+- [ ] 5.6 模擬器上方呈現法制時間軸，列出憲判 111年憲判字第17號言詞辯論與宣示、身分法三讀與公布、第 23 條期限五個節點，各節點含日期與一手來源連結，並標示各里程碑距其法定期限的間隔。驗證：時間軸顯示 2022-10-28 宣示、2025-10-17 三讀標示距期限 11 天、2025-10-23 公布標示距期限 5 天、2028-10-23 為第 23 條期限；五個節點皆可點擊至法規資料庫或憲法法庭原文。涵蓋 Requirement: Present the legal timeline that makes seat allocation an open question。
 
 ## 6. 溯源介面
 

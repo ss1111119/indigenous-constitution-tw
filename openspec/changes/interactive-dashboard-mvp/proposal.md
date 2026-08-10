@@ -39,6 +39,8 @@
     - scripts/lib/provenance.ps1
     - data/processed/population-by-county.json
     - data/processed/population-by-township.json
+    - data/processed/tribes-by-county.json
+    - data/processed/tribes-by-township.json
     - data/processed/land-ownership.json
     - data/geo/counties.geojson
     - data/geo/townships.geojson

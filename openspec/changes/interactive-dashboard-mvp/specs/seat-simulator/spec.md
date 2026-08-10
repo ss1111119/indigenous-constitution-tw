@@ -108,3 +108,29 @@ The simulator SHALL report the representation gap using population as the denomi
 | ----- | ---------------- |
 | Population | 2.51% |
 | Electors | 2.25% |
+
+### Requirement: Present the legal timeline that makes seat allocation an open question
+
+The simulator SHALL present a timeline of the constitutional and legislative events that placed the question of plains indigenous political participation before the legislature, with each event carrying its date and a link to the primary source.
+
+The timeline SHALL show the interval between each legislative milestone and its governing deadline, so that the reader can see whether legislation met its deadline and how long remains before the next one.
+
+#### Scenario: Timeline accompanies the simulator
+
+- **WHEN** the simulator renders
+- **THEN** a timeline of the governing constitutional and legislative events is visible, each entry showing its date and linking to its primary source
+
+#### Scenario: Deadlines are shown relative to milestones
+
+- **WHEN** the timeline displays a milestone that is governed by a deadline
+- **THEN** the interval between that milestone and its deadline is stated
+
+##### Example: Timeline entries and deadline intervals
+
+| Date | Event | Deadline relation |
+| ---- | ----- | ----------------- |
+| 2022-06-28 | Constitutional Court oral argument | — |
+| 2022-10-28 | Judgment 111-Hsien-Pan-17 announced; three-year deadline begins | deadline 2025-10-28 |
+| 2025-10-17 | Third reading of the Plains Indigenous Status Act | 11 days before deadline |
+| 2025-10-23 | Promulgated and in force | 5 days before deadline |
+| 2028-10-23 | Deadline for legislation on political participation under Article 23 | three years from entry into force |
