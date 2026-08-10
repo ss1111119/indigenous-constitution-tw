@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>臺灣原住民族憲政代表性與土地資料</title>
+<meta name="description" content="用公開資料理解臺灣原住民族的人口、選舉與憲政代表性，並提供席次分配的制度模擬。">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!--
+  分頁以 radio + :checked 實作，不依賴 JavaScript。
+  停用 JS 時分頁仍可切換，只有圖表區改為顯示說明文字。
+-->
+<input type="radio" name="panel" id="tab-population" class="tab-radio" checked>
+<input type="radio" name="panel" id="tab-election" class="tab-radio">
+<input type="radio" name="panel" id="tab-land" class="tab-radio">
+<input type="radio" name="panel" id="tab-simulator" class="tab-radio">
+
+<header class="site-header">
+  <h1>臺灣原住民族憲政代表性與土地資料</h1>
+  <p class="lede">
+    原住民族的人口、選舉與土地資料分散在三個機關，沒有一個地方把它們接起來。
+    這個網站做的是整合與計算——每一個數字都能追到來源，並標明它是官方統計、學術估計，還是本站自己算的。
+  </p>
+</header>
+
+<nav class="tabs" aria-label="資料面板">
+  <label for="tab-population">人口</label>
+  <label for="tab-election">選舉</label>
+  <label for="tab-land">土地</label>
+  <label for="tab-simulator">席次模擬</label>
+</nav>
+
+<div class="region-bar">
+  <label for="region-select">地區</label>
+  <select id="region-select" data-role="region">
+    <option value="">全國</option>
+  </select>
+  <label for="township-select" class="sr-only">鄉鎮市區</label>
+  <select id="township-select" data-role="region-township" hidden></select>
+  <button type="button" id="region-reset" data-role="region-reset" hidden>回到全國</button>
+  <p class="region-note">
+    人口與土地面板會隨此選擇變動；選舉與席次模擬固定為全國資料。
+  </p>
+</div>
+
+<main>
+
+  <section class="panel" id="panel-population" aria-labelledby="h-population">
+    <h2 id="h-population">人口</h2>
+    <p class="scope" data-role="scope-population">全國</p>
+    <div class="chart" data-role="tribe-chart"></div>
+    <div class="chart" data-role="population-map"></div>
+    <p class="panel-fallback">
+      本面板顯示選定範圍的原住民族人口組成（16 個現行認定民族、10 個平埔族群、未申報族別），
+      以及下一層級行政區的原住民人口比例分布圖。資料來自內政部戶政司
+      「現住原住民人口按性別、身分、原住民族別分」與「現住人口數按性別及原住民身分分」，
+      基準日為民國 115 年 6 月底。
+    </p>
+  </section>
+
+  <section class="panel" id="panel-election" aria-labelledby="h-election">
+    <h2 id="h-election">選舉</h2>
+    <p class="scope">全國（原住民立委選舉區為山地、平地兩個全國性選區，無法依縣市切分）</p>
+    <div class="chart" data-role="turnout-chart"></div>
+    <div class="chart" data-role="ratio-chart"></div>
+    <p class="panel-fallback">
+      本面板顯示第 7 至 11 屆（2008–2024）山地原住民、平地原住民、區域立委三類的投票率，
+      以及「每席區域立委選民數 ÷ 每席原住民立委選民數」的倍數差距。
+      該倍數從 2008 年的 4.29 倍收斂到 2024 年的 3.57 倍——
+      原因是憲法增修條文第 4 條把原住民席次定為固定 6 席，
+      而區域席次依人口比例分配，因此原住民人口成長不會反映為席次增加。
+      資料來自中央選舉委員會選舉資料庫。
+    </p>
+  </section>
+
+  <section class="panel" id="panel-land" aria-labelledby="h-land">
+    <h2 id="h-land">土地</h2>
+    <p class="scope" data-role="scope-land">全國</p>
+    <div class="chart" data-role="land-chart"></div>
+    <p class="panel-fallback">
+      本面板顯示原住民保留地依所有權別的逐年變化。全國總面積幾乎不變（約 26.5 萬公頃），
+      但民國 110 至 113 年間約有 6,400 公頃由國有轉為私有，民國 112 年私有面積首度超過國有。
+      資料只涵蓋民國 107、110、111、112、113 年——缺 108 與 109 年，圖上會斷線而不做內插。
+      全國僅 13 個縣市有原住民保留地，其餘 9 個縣市是沒有保留地，不是資料缺漏。
+      資料來自原住民族委員會「原住民保留地按所有權別」。
+    </p>
+  </section>
+
+  <section class="panel" id="panel-simulator" aria-labelledby="h-simulator">
+    <h2 id="h-simulator">席次模擬</h2>
+    <p class="scope">全國</p>
+    <div class="chart" data-role="timeline"></div>
+    <div class="chart" data-role="simulator"></div>
+    <p class="panel-fallback">
+      本面板提供席次分配的制度模擬：調整「平埔族群納入人口數」與「保障席次數」，
+      並在「113 席內重分配」與「增額」兩種算法間切換，即時看到代表性指標的變化。
+      初始狀態即為現況，不預設任何立場。
+      <br><br>
+      為什麼這是一個待決問題：憲法法庭 111 年憲判字第 17 號於 2022-10-28 宣示，
+      要求 3 年內修法；《平埔原住民族群身分法》2025-10-17 三讀、10-23 公布施行，
+      距憲法期限僅 5 天。該法第 23 條要求政府於施行後三年內（至 2028-10-23）
+      就平埔族群的「政治參與」立法，但<strong>全法 24 條沒有出現「選舉」「保障席次」
+      任何字樣</strong>，也未指定政治參與的形式。保障席次只是其中一種可能，
+      不是法律預定的結果。
+    </p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <h2>資料來源</h2>
+  <!--
+    此處為人類可讀的來源摘要。機器可讀的完整記錄（含口徑陷阱、驗證狀態、資料缺口）
+    在 data/sources.json，該檔為唯一真實來源。
+  -->
+  <ul class="sources">
+    <li>
+      <strong>內政部戶政司</strong>——現住人口數按性別及原住民身分分（ODRP013）、
+      現住原住民人口按性別、身分、原住民族別分（ODRP018）。
+      民國 115 年 6 月底。政府資料開放授權條款第 1 版。
+    </li>
+    <li>
+      <strong>中央選舉委員會</strong>——選舉資料庫 votedata，第 7 至 11 屆立法委員選舉。
+    </li>
+    <li>
+      <strong>原住民族委員會</strong>——原住民保留地按所有權別、原住民人口數統計月報。
+      政府資料開放授權條款第 1 版。
+    </li>
+    <li>
+      <strong>內政部國土測繪中心</strong>——直轄市、縣市界線與鄉鎮市區界線（TWD97 經緯度）。
+      政府資料開放授權條款第 1 版。
+    </li>
+    <li>
+      <strong>法規</strong>——中華民國憲法增修條文第 4 條、平埔原住民族群身分法、
+      憲法法庭 111 年憲判字第 17 號。
+    </li>
+  </ul>
+  <p class="provenance-note">
+    完整的來源記錄、口徑陷阱與資料缺口說明見
+    <a href="../data/sources.json"><code>data/sources.json</code></a>。
+  </p>
+
+  <h2>資料缺口</h2>
+  <p>
+    平埔族群的戶籍登記人口<strong>目前為零</strong>——身分登記自 2026 年 8 月中才開始。
+    戶政司的官方欄位自民國 114 年 11 月起已預留平埔族群位置，值為 0；
+    在那之前欄位根本不存在，因此時間序列在 2025 年 10 月以前不會畫成 0，而是沒有資料。
+    原民會主秘轉述專家學者評估「第一年預估 5 萬人登記」，
+    那是學術估計不是官方統計，且僅涵蓋西拉雅族第一年，本站不會把它當成官方數字。
+  </p>
+
+  <h2>立場聲明</h2>
+  <p>
+    本專案為資料呈現與制度模擬，不代表任何政黨、政府機關或作者的政治立場。
+    席次模擬結果是依使用者輸入參數計算的數學結果，不構成制度主張。
+  </p>
+</footer>
+
+<noscript>
+  <div class="noscript-note">
+    這個網站的圖表需要 JavaScript 才能繪製。上方各面板的說明文字與下方的資料來源清單
+    在停用 JavaScript 時仍完整可讀；分頁切換也不需要 JavaScript。
+    若要看圖表與席次模擬器，請啟用 JavaScript。
+  </div>
+</noscript>
+
+<!-- 函式庫以本機檔案載入，不使用 CDN。理由見 vendor/README.md。 -->
+<script src="vendor/chart.umd.js"></script>
+
+<!-- type="module" 讓瀏覽器以 ES module 載入；停用 JavaScript 時整段不執行，
+     頁面退回純 HTML + CSS，分頁與所有文字仍可用。 -->
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>

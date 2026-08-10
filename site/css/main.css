@@ -1,0 +1,368 @@
+/* 臺灣原住民族憲政代表性資料儀表板
+ *
+ * 無 build step、無前處理器。色彩以 CSS 變數集中管理，深色模式僅覆寫變數。
+ * 分頁以 radio + :checked 實作，不依賴 JavaScript——故 .tab-radio 必須是 main 的前置兄弟。
+ */
+
+:root {
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --border: #d8d3ca;
+  --text: #1c1a17;
+  --text-muted: #5d574e;
+  --accent: #7a4a2b;
+  --accent-soft: #f0e6dc;
+  --focus: #1a5fb4;
+  --gap-warn: #8a5a00;
+  --max-width: 68rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16150f;
+    --surface: #1f1e17;
+    --border: #3b382e;
+    --text: #eeebe4;
+    --text-muted: #a9a397;
+    --accent: #d9a878;
+    --accent-soft: #2c261e;
+    --focus: #78aeed;
+    --gap-warn: #e0b25c;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 1rem 4rem;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  line-height: 1.75;
+  /* 中文與西文數字混排時，數字用等寬字距較易比對 */
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+a { color: var(--accent); }
+
+code {
+  background: var(--accent-soft);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+/* --- 頁首 --- */
+
+.site-header {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 2.5rem 0 1.5rem;
+}
+
+.site-header h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.4rem, 4vw, 2.1rem);
+  line-height: 1.35;
+}
+
+.lede {
+  margin: 0;
+  max-width: 46rem;
+  color: var(--text-muted);
+}
+
+/* --- 分頁（radio + :checked，無 JS） --- */
+
+.tab-radio {
+  /* 不能用 display:none——那會讓 radio 無法取得焦點、鍵盤操作失效。
+     移出視覺範圍但保留在可及性樹中。 */
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.tabs {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.tabs label {
+  padding: 0.6rem 1.1rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  color: var(--text-muted);
+  font-weight: 600;
+  /* 讓標籤底邊蓋住 .tabs 的邊框，形成分頁相連的視覺 */
+  margin-bottom: -2px;
+}
+
+.tabs label:hover { background: var(--accent-soft); }
+
+/* 對應每個 radio 的選中狀態。順序須與 HTML 中的 radio 順序一致。 */
+#tab-population:checked  ~ .tabs label[for="tab-population"],
+#tab-election:checked    ~ .tabs label[for="tab-election"],
+#tab-land:checked        ~ .tabs label[for="tab-land"],
+#tab-simulator:checked   ~ .tabs label[for="tab-simulator"] {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* radio 取得焦點時，對應的標籤也要有可見的焦點指示 */
+#tab-population:focus-visible ~ .tabs label[for="tab-population"],
+#tab-election:focus-visible   ~ .tabs label[for="tab-election"],
+#tab-land:focus-visible       ~ .tabs label[for="tab-land"],
+#tab-simulator:focus-visible  ~ .tabs label[for="tab-simulator"] {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* --- 地區選擇器 --- */
+
+.region-bar {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 1rem 0 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.region-bar label { font-weight: 600; }
+
+.region-bar select,
+.region-bar button {
+  font: inherit;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.region-bar button { cursor: pointer; }
+
+.region-note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* 僅供螢幕閱讀器的標籤。鄉鎮下拉在視覺上緊接縣市下拉，
+   不需要可見標籤，但仍須有可及性名稱。 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.panel-error {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  background: var(--accent-soft);
+  border-left: 4px solid var(--gap-warn);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.9375rem;
+}
+
+.panel-error span {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+
+/* --- 圖表 --- */
+
+.chart-title {
+  margin: 0 0 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.canvas-wrap {
+  position: relative;
+  /* Chart.js 需要一個有明確高度的容器才能正確 resize */
+  width: 100%;
+}
+
+.chart-foot {
+  margin: 0.6rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.panel-note {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* 「尚無登記」的零值狀態。刻意不畫成長度為零的長條——
+   零是一個【狀態】不是一個量值，用長條呈現會讓人以為圖表壞了。
+   邊框用警示色而非錯誤色：這不是錯誤，是還沒發生的事。 */
+.zero-state {
+  margin: 1.5rem 0 0;
+  padding: 0.9rem 1.1rem;
+  background: var(--surface);
+  border: 1px dashed var(--gap-warn);
+  border-radius: 4px;
+}
+
+.zero-state h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  color: var(--gap-warn);
+}
+
+.zero-state-list {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.zero-state-note {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* 性質標籤：官方統計 / 學術估計 / 本站計算。
+   顏色不承載意義（標籤文字本身就說明了），僅作視覺分組。 */
+.nature-tag {
+  display: inline-block;
+  padding: 0.05em 0.5em;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* --- 面板 --- */
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.panel {
+  display: none;
+  padding: 1.5rem 0 0;
+}
+
+#tab-population:checked ~ main #panel-population,
+#tab-election:checked   ~ main #panel-election,
+#tab-land:checked       ~ main #panel-land,
+#tab-simulator:checked  ~ main #panel-simulator {
+  display: block;
+}
+
+.panel h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.3rem;
+}
+
+/* 每個面板都必須宣告其地理範圍——選舉與模擬面板固定為全國，
+   若不標示，使用者會誤以為它們跟著地區選擇器變動。 */
+.scope {
+  margin: 0 0 1.25rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.scope::before {
+  content: "範圍：";
+}
+
+.chart {
+  margin: 0 0 1.5rem;
+  /* 寬內容（圖表、地圖）自行橫向滾動，頁面本體不得橫向滾動 */
+  overflow-x: auto;
+}
+
+/* 尚未填入內容的圖表容器不佔空間——否則停用 JavaScript 時會出現大片空白，
+   看起來像頁面壞掉而非刻意留白。 */
+.chart:empty {
+  display: none;
+}
+
+.panel-fallback {
+  max-width: 46rem;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+/* --- 頁尾 --- */
+
+.site-footer {
+  max-width: var(--max-width);
+  margin: 3.5rem auto 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.site-footer h2 {
+  margin: 2rem 0 0.6rem;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.site-footer h2:first-child { margin-top: 0; }
+
+.sources {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.sources li { margin-bottom: 0.5rem; }
+
+.sources strong { color: var(--text); }
+
+.provenance-note { margin: 0.75rem 0 0; }
+
+/* --- noscript --- */
+
+.noscript-note {
+  max-width: var(--max-width);
+  margin: 2rem auto 0;
+  padding: 1rem 1.1rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--gap-warn);
+  border-radius: 4px;
+  color: var(--text);
+}
+
+/* --- 窄螢幕 --- */
+
+@media (max-width: 32rem) {
+  .tabs label { padding: 0.5rem 0.7rem; font-size: 0.9375rem; }
+  .site-header { padding-top: 1.5rem; }
+}

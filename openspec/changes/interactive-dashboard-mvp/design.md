@@ -172,7 +172,13 @@ processed JSON 的共同外層：
 
 專案為全新建置，無既有系統需遷移。
 
-部署：GitHub Pages 指向 site/ 目錄。現有 docs/ 目錄維持研究文件用途，不與網站目錄衝突 — 此決定取代可行性研究 E 節「將研究文件移至 research/」的建議，因為改用 site/ 後不再有衝突。
+部署：**GitHub Pages 從 repo 根目錄發布**，網站入口為 `/<repo>/site/`。
+
+⚠️ 此段於實作 3.2 時更正。原本寫「Pages 指向 site/ 目錄」，但 **GitHub Pages 只支援 repo 根目錄或 /docs 兩個選項**，無法指向任意資料夾。且前端以相對路徑 `../data/` 讀取資料，若發布根目錄設在 site/，資料就落在發布範圍之外，線上必然 404。
+
+從 repo 根目錄發布可同時解決兩者：`site/index.html` 位於 `/<repo>/site/`，其 `../data/` 正好解析為 `/<repo>/data/`。代價是網址多一層 `site/`，換得零改動與零 build step。
+
+現有 docs/ 目錄維持研究文件用途 — 此決定取代可行性研究 E 節「將研究文件移至 research/」的建議，因為網站改用 site/ 後不再有衝突。
 
 回退：靜態站，回退即還原至前一個 commit。
 
