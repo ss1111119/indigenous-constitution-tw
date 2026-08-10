@@ -1,0 +1,85 @@
+{
+  "_sourceId": "cip-reserved-land-owner",
+  "_generatedBy": "scripts/build-land.ps1",
+  "_generatedAt": "2026-08-10",
+  "_fieldNature": {
+    "county_owned": "official-statistic",
+    "other_units": "official-statistic",
+    "parcels": "official-statistic",
+    "private": "official-statistic",
+    "province_owned": "official-statistic",
+    "public": "official-statistic",
+    "roc_year": "official-statistic",
+    "state_owned": "official-statistic",
+    "total_derived": "derived-by-this-project",
+    "total_official": "official-statistic",
+    "township_owned": "official-statistic"
+  },
+  "data": [
+    {
+      "roc_year": 110,
+      "total_official": 265269.216,
+      "public": 135289.956,
+      "state_owned": 135135.872,
+      "county_owned": 95.869,
+      "township_owned": 58.215,
+      "province_owned": 0.0,
+      "other_units": 68.946,
+      "private": 129910.314,
+      "total_derived": null,
+      "parcels": 572980
+    },
+    {
+      "roc_year": 111,
+      "total_official": 265393.613,
+      "public": 133730.193,
+      "state_owned": 133577.407,
+      "county_owned": 93.874,
+      "township_owned": 58.912,
+      "province_owned": 0.0,
+      "other_units": 102.868,
+      "private": 131560.552,
+      "total_derived": null,
+      "parcels": 579861
+    },
+    {
+      "roc_year": 107,
+      "total_official": null,
+      "public": 147498.43,
+      "state_owned": 147325.449,
+      "county_owned": 110.737,
+      "township_owned": 62.244,
+      "province_owned": 0.0,
+      "other_units": 0.0,
+      "private": 117291.994,
+      "total_derived": 264790.424,
+      "parcels": 0
+    },
+    {
+      "roc_year": 112,
+      "total_official": 265774.95,
+      "public": 129864.887,
+      "state_owned": 129704.349,
+      "county_owned": 88.96,
+      "township_owned": 71.578,
+      "province_owned": 0.0,
+      "other_units": 37.545,
+      "private": 135872.518,
+      "total_derived": null,
+      "parcels": 592961
+    },
+    {
+      "roc_year": 113,
+      "total_official": 265766.858,
+      "public": 128919.942,
+      "state_owned": 128762.884,
+      "county_owned": 85.368,
+      "township_owned": 71.691,
+      "province_owned": 0.0,
+      "other_units": 37.792,
+      "private": 136809.112,
+      "total_derived": null,
+      "parcels": 596023
+    }
+  ]
+}

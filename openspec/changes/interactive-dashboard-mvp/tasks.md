@@ -7,13 +7,13 @@
 - [x] 1.3 人口轉檔腳本接受民國年月參數，將 ODRP013 與 ODRP018 聚合為縣市層級 JSON，寫檔前驗證男加女等於合計、原住民加非原住民等於總計、族別加總等於原住民合計。驗證：以參數 11506 執行，全國總人口 23,243,565、原住民合計 637,620、16 族加總 637,620、10 個平埔欄位皆為 0。涵蓋 Requirement: Convert raw government files to aggregated JSON、Requirement: Accept a period parameter。
 - [x] 1.4 人口轉檔腳本另產生鄉鎮層級 JSON，以 8 碼 district_code 為鍵，並標示哪些鄉鎮屬於原住民族地區。驗證：鄉鎮數量與來源村里聚合後一致，且鄉鎮層級各欄加總等於縣市層級對應值。涵蓋 Requirement: Convert raw government files to aggregated JSON；實作 design 決策二：地理層級為縣市加鄉鎮下鑽。
 - [x] 1.5 人口轉檔腳本在任一自我驗證失敗時中止並回報差異數值，且不產生輸出檔案。驗證：暫時竄改一列來源資料使男加女不等於合計，確認腳本中止、回報差異、輸出檔未被建立或覆寫。涵蓋 Requirement: Self-validate before writing output；實作 design 失敗模式一節。
-- [ ] 1.6 土地轉檔腳本將保留地所有權別 CSV 轉為逐年 JSON，缺少年度不產生資料點且不做內插；民國 107 年缺所有權部總計列時自行相加並將該欄標為 derived-by-this-project。驗證：輸出含民國 107、110、111、112、113 五個年度且無 108、109；民國 113 年所有權部總計 265,766.858、國有 128,762.884。涵蓋 Requirement: Preserve gaps in time series。
-- [ ] 1.7 選舉轉檔腳本以自我驗證偵測各年度欄位版面，兩種版面皆無法通過驗證時中止而不套用預設版面；輸出帶溯源外層的 JSON，將既有 meta.derived 的中文散文改為欄位層級 _fieldNature 對照表。驗證：五屆資料全部通過版面偵測並記錄所用版面；每席選舉人數、倍數差距、人口占比、席次占比四欄性質為 derived-by-this-project。涵蓋 Requirement: Detect election data column layout。
+- [x] 1.6 土地轉檔腳本將保留地所有權別 CSV 轉為逐年 JSON，缺少年度不產生資料點且不做內插；民國 107 年缺所有權部總計列時自行相加並將該欄標為 derived-by-this-project。驗證：輸出含民國 107、110、111、112、113 五個年度且無 108、109；民國 113 年所有權部總計 265,766.858、國有 128,762.884。涵蓋 Requirement: Preserve gaps in time series。
+- [x] 1.7 選舉轉檔腳本以自我驗證偵測各年度欄位版面，兩種版面皆無法通過驗證時中止而不套用預設版面；輸出帶溯源外層的 JSON，將既有 meta.derived 的中文散文改為欄位層級 _fieldNature 對照表。驗證：五屆資料全部通過版面偵測並記錄所用版面；每席選舉人數、倍數差距、人口占比、席次占比四欄性質為 derived-by-this-project。涵蓋 Requirement: Detect election data column layout。
 
 ## 2. 地理圖資
 
-- [ ] 2.1 取得可再利用的臺灣縣市界 GeoJSON 並確認授權允許再利用，屬性含可與人口資料 join 的 5 碼區域代碼。驗證：以縣市層級人口 JSON 的所有鍵與圖資屬性 join，22 個縣市全部對應成功且無孤兒鍵。實作 design 決策二：地理層級為縣市加鄉鎮下鑽。
-- [ ] 2.2 取得鄉鎮界 GeoJSON 並依縣市切分為可個別載入的檔案，屬性含 8 碼區域代碼。驗證：任選三個縣市，其鄉鎮圖資與鄉鎮層級人口 JSON 完全對應；單一縣市檔案可獨立載入而不需其他縣市檔案。涵蓋 Requirement: Load township geometry only when needed。
+- [x] 2.1 取得可再利用的臺灣縣市界 GeoJSON 並確認授權允許再利用，屬性含可與人口資料 join 的 5 碼區域代碼。驗證：以縣市層級人口 JSON 的所有鍵與圖資屬性 join，22 個縣市全部對應成功且無孤兒鍵。實作 design 決策二：地理層級為縣市加鄉鎮下鑽。
+- [x] 2.2 取得鄉鎮界 GeoJSON 並依縣市切分為可個別載入的檔案，屬性含 8 碼區域代碼。驗證：任選三個縣市，其鄉鎮圖資與鄉鎮層級人口 JSON 完全對應；單一縣市檔案可獨立載入而不需其他縣市檔案。涵蓋 Requirement: Load township geometry only when needed。
 
 ## 3. 頁面骨架與共享狀態
 
