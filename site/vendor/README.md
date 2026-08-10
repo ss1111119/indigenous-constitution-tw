@@ -9,5 +9,14 @@
 | 檔案 | 版本 | 授權 | 來源 |
 | --- | --- | --- | --- |
 | `chart.umd.js` | Chart.js 4.4.7 | MIT | https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js |
+| `leaflet.js` / `leaflet.css` | Leaflet 1.9.4 | BSD-2-Clause | https://unpkg.com/leaflet@1.9.4/dist/ |
 
 更新方式：直接以新版覆蓋並更新上表，同時確認各面板圖表仍正常渲染。
+
+## Leaflet 不載入底圖磚
+
+本站的地圖是行政區 choropleth，只需要多邊形，**不使用任何 tile layer**。
+理由與上面同一條：OpenStreetMap 或其他磚服務是外部相依，會在多年尺度上帶來
+失效風險，且各有使用政策與標示義務。不載磚也讓 choropleth 的顏色不必跟底圖搶對比。
+
+Leaflet 在此的角色是向量渲染器與平移縮放，不是地圖服務客戶端。

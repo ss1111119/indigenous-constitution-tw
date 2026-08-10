@@ -247,6 +247,70 @@ code {
   color: var(--text-muted);
 }
 
+/* --- 地圖 --- */
+
+.map-canvas {
+  height: 32rem;
+  max-height: 76vh;
+  /* 臺灣本島高寬比約 1:1.7（縱長），滿版寬度會在左右留下大片空白。
+     限制寬度讓地圖填滿容器，並置左與其他圖表對齊。 */
+  max-width: 26rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  /* 不載底圖磚，故地圖底色即頁面表面色，而非 Leaflet 預設的灰 */
+  background: var(--bg);
+}
+
+/* Leaflet 的預設樣式會在深色模式下露出淺色控制項 */
+.leaflet-container { background: var(--bg); font: inherit; }
+
+.leaflet-control-zoom a {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.leaflet-tooltip {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.9rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.map-legend-title { font-weight: 600; color: var(--text); }
+
+.map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.map-legend-item i {
+  width: 1rem;
+  height: 0.75rem;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+}
+
+/* 原住民族地區以外框而非填色標示——填色通道已被人口比例佔用，
+   同一個通道表達兩件事會互相干擾。 */
+.map-legend-district i {
+  background: transparent;
+  border: 2px solid var(--accent);
+}
+
 /* 性質標籤：官方統計 / 學術估計 / 本站計算。
    顏色不承載意義（標籤文字本身就說明了），僅作視覺分組。 */
 .nature-tag {

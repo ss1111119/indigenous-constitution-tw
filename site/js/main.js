@@ -7,6 +7,7 @@
 import { onRegionChange } from './state.js';
 import { initRegionSelector, bindScopeLabel } from './region.js';
 import { populationPanel } from './panel-population.js';
+import { mapPanel } from './panel-map.js';
 
 async function main() {
   try {
@@ -28,6 +29,7 @@ async function main() {
   onRegionChange(bindScopeLabel('[data-role="scope-land"]'));
 
   onRegionChange(populationPanel);
+  onRegionChange(mapPanel);
 }
 
 main();
