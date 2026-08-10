@@ -11,7 +11,14 @@
 - **BREAKING**（僅影響開發流程）：`site/js/state.js` 的 `DATA_BASE` 由 `../data` 改為 `data`，`site/js/panel-map.js` 的 GeoJSON 取用路徑同步調整。改動後直接以靜態伺服器開啟 `site/` 目錄將無法載入資料，本機預覽一律改用組建出的 `_site/`——這正是本次刻意採取的設計：本機與 CI 共用同一支腳本、同一種目錄佈局，避免兩套路徑邏輯分歧導致「本機正常、線上 404」。
 - 新增 GitHub Actions workflow，於推送到 `master` 時執行組建腳本並以 GitHub Pages 發佈。
 - repo 目前沒有 git remote，需納入設定步驟（使用者自行在 GitHub 建立 public repo）。
-- 新增一筆授權待確認事項到既有的待確認機制：`data/raw/moi-year-end-population-by-sex-age.xls`（戶政司該份需人工點擊下載）的授權條款是否允許公開再散布。public repo 會使 `data/raw/` 一併公開，此問題須有結論才推送。
+- 推送前完成 `data/raw` 全部已入庫檔案的再散布條款盤點，結果記入 `data/sources.json`。public repo 會使 `data/raw/` 一併公開，且 git 歷史中的檔案一推即公開，事後 `git rm` 不足以排除，故此事必須在推送之前完成。
+
+  **【2026-08-10 更新】盤點結果與本提案原先的假設相反。** 原本只列出
+  `data/raw/moi-year-end-population-by-sex-age.xls`（戶政司該份需人工點擊下載）一項待確認，
+  實際查證後該檔受戶政司站台層級的資料開放宣告涵蓋（政府資料開放授權條款第 1 版），是最明確的一份。
+  真正未決的是 `cip-11506-*.xls` 6 檔——它們來自原民會**主站** `www.cip.gov.tw`（僅著作權聲明，
+  允許「在合理範圍內」重製並註明出處），而非該會的開放資料平臺 `data.cip.gov.tw`（有明確開放授權）。
+  另有三個 `cip-reserved-land-*.csv` 原本完全沒有來源記錄。詳見 design 決策六。
 
 ## Non-Goals
 
@@ -25,7 +32,7 @@
 
 ### New Capabilities
 
-- `site-deployment`: 發佈目錄的組成規則（哪些檔案進、哪些不進）、本機與 CI 共用單一組建路徑的要求、組建自我驗證，以及推送前的資料授權把關。
+- `site-deployment`: 發佈目錄的組成規則（哪些檔案進、哪些不進）、本機與 CI 共用單一組建路徑的要求、組建自我驗證，以及推送前的資料授權把關——含條款須讀實際供應站台、三種查證結果的區辨，以及專案自身的再散布決定須與提供者的授權分開陳述。
 
 ### Modified Capabilities
 
@@ -47,3 +54,11 @@
     - `data/sources.json`
   - Removed: (none)
 - 依賴與系統：需在 GitHub repo 設定中將 Pages 來源設為 GitHub Actions；workflow 使用 `actions/checkout`、`actions/configure-pages`、`actions/upload-pages-artifact`、`actions/deploy-pages`；組建腳本僅用 Python 標準函式庫，與既有 `scripts/build-geo.py` 一致。
+
+  **【2026-08-10 補記】Pages 設定的實際狀況**：repo 建立時 Pages 已被啟用為
+  `build_type: legacy`、來源分支指向不存在的 `main`，因此第一次推送觸發的 workflow
+  在 deploy 階段失敗（`Branch "master" is not allowed to deploy to github-pages
+  due to environment protection rules`），build 階段是成功的。改為
+  `build_type: workflow` 後 `master` 才被加入 `github-pages` 環境的允許分支清單。
+  此設定可用 `gh api -X PUT repos/{owner}/{repo}/pages -f build_type=workflow` 完成，
+  不必手動點選；`github-pages` 環境仍留有一筆指向 `main` 的舊分支政策，無害但可清除。

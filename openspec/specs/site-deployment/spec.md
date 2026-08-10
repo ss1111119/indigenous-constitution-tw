@@ -1,4 +1,10 @@
-## ADDED Requirements
+# site-deployment Specification
+
+## Purpose
+
+Defines how the site becomes a published artifact: what the publish directory contains and what it must exclude, why the build fails rather than shipping incomplete data, the single definition of the data base path, the requirement that local preview and CI run the same build so local success is evidence of deployed success, automated deployment from the default branch, and the licensing check that must clear before the repository is made public — including that terms are read from the platform that served each file, and that a decision by this project to redistribute is recorded separately from the provider's grant.
+
+## Requirements
 
 ### Requirement: Publish directory contains only site assets and the data the site reads
 
@@ -22,6 +28,7 @@ The build script SHALL delete any existing `_site/` before assembling, so that f
 - **WHEN** the build script runs again
 - **THEN** that file is absent from the new `_site/`
 
+---
 ### Requirement: Build fails loudly when a required data source is missing
 
 The build script SHALL hold an explicit list of required data sources and SHALL verify each one exists before assembling. When any required source is absent, the script SHALL exit with a non-zero status code, SHALL name the missing path on stderr, and SHALL NOT leave a partially assembled `_site/` behind.
@@ -39,6 +46,7 @@ The script SHALL NOT silently skip a missing source and produce a publish direct
 - **WHEN** the build script completes successfully
 - **THEN** the script exits with status code 0 and prints to stdout the number of files copied and the total size of `_site/`
 
+---
 ### Requirement: The data base path has exactly one definition
 
 The site SHALL resolve all data requests from a single exported constant defining the data base path relative to the page. No module other than the one declaring that constant SHALL contain a literal data base path, and the site SHALL NOT contain the parent-relative literal `../data` in any script or in the page markup.
@@ -58,6 +66,7 @@ The site SHALL resolve all data requests from a single exported constant definin
 - **WHEN** a county is selected and the map requests township geometry
 - **THEN** the request path is derived from the shared data base constant, and the geometry loads without a 404
 
+---
 ### Requirement: Local preview and CI publish share one build path
 
 The build script SHALL be the only supported way to produce a runnable site, and both local preview and the deployment workflow SHALL invoke that same script with the same output layout. The project SHALL NOT provide an alternative path that serves `site/` directly with a different data base resolution.
@@ -65,13 +74,14 @@ The build script SHALL be the only supported way to produce a runnable site, and
 #### Scenario: serving the publish directory renders every panel
 
 - **WHEN** a static server serves `_site/` and its root URL is opened
-- **THEN** the population, election, land, and map panels and the seat simulator all render, and no request returns 404
+- **THEN** the population, election, land, and map panels and the seat simulator all render, and every resource the page requests returns a success status — a browser-initiated probe for a file the page never references, such as `/favicon.ico`, is not a page request and does not count
 
 #### Scenario: the workflow builds rather than publishing the source tree
 
 - **WHEN** the deployment workflow runs
 - **THEN** it executes the build script and publishes the resulting `_site/`, and does not upload the repository root or `site/` as the site artifact
 
+---
 ### Requirement: Deployment is automated from the default branch
 
 The repository SHALL contain a GitHub Actions workflow that builds and deploys the site to GitHub Pages when a commit is pushed to `master`, and that can also be triggered manually. The workflow SHALL grant only the permissions Pages deployment requires. When the build script fails, the workflow SHALL fail and SHALL NOT deploy.
@@ -92,19 +102,43 @@ The repository SHALL contain a GitHub Actions workflow that builds and deploys t
 - **WHEN** a maintainer triggers the workflow from the Actions interface without pushing a commit
 - **THEN** the workflow runs and deploys the current state of `master`
 
+---
 ### Requirement: Redistribution licensing is settled before the repository is made public
 
-Making the repository public also publishes `data/raw/`. Every file under `data/raw/` SHALL have its redistribution terms recorded in `data/sources.json` before the repository is pushed publicly. Where the terms have not been verified, the registry SHALL record the file as pending verification, following the project's existing practice of recording unverified facts rather than assuming them.
+Making the repository public also publishes `data/raw/`. Every file under `data/raw/` SHALL have a source record in `data/sources.json` stating its redistribution terms before the repository is pushed publicly.
 
-The file obtained by manual browser download rather than a standard open-data endpoint SHALL NOT be assumed to carry the same open-data licence as the rest, and the repository SHALL NOT be pushed publicly while its terms remain unverified.
+Terms SHALL be read from the document that actually governs the site the file was served from. Terms published by one platform SHALL NOT be applied to a file obtained from a different platform, even when both are operated by the same agency.
 
-#### Scenario: unverified licensing is recorded, not assumed
+The registry SHALL distinguish three outcomes: terms verified as permitting redistribution, terms verified as prohibiting it, and terms located but whose scope does not determine the question. Where the scope is indeterminate, `reusable` SHALL remain `unknown`, the governing wording SHALL be quoted in the record, and any decision by this project to redistribute anyway SHALL be recorded as the project's own judgement, stated separately from the provider's grant so the two cannot be read as the same thing.
 
-- **WHEN** a file under `data/raw/` has redistribution terms that have not been verified
-- **THEN** `data/sources.json` records it as pending verification, and no open-data licence is stated for it
+A file with no source record at all, or whose terms are verified as prohibiting redistribution, SHALL block the public push.
 
-#### Scenario: unverified licensing blocks the public push
+#### Scenario: terms come from the platform that served the file
 
-- **GIVEN** a file under `data/raw/` is recorded as pending licence verification
+- **GIVEN** an agency operates both an open-data platform and a general website with different terms
+- **WHEN** a file is obtained from the general website
+- **THEN** the record states the general website's terms, and does not cite the open-data platform's licence
+
+##### Example: one agency, two platforms
+
+| File origin | Governing document | reusable |
+| --- | --- | --- |
+| open-data platform of the agency | that platform's open-data terms | `true` |
+| general website of the same agency | that site's copyright notice | `unknown` unless the notice settles redistribution |
+
+#### Scenario: indeterminate scope is recorded, not resolved by inference
+
+- **WHEN** the governing terms permit reuse only "within a reasonable scope" and do not state whether verbatim redistribution of a complete file qualifies
+- **THEN** `reusable` remains `unknown`, the record quotes the wording, and no open-data licence is claimed for the file
+
+#### Scenario: a project decision to redistribute is recorded as such
+
+- **GIVEN** a file whose terms leave the question indeterminate and which this project decides to redistribute
+- **WHEN** the decision is recorded in `data/sources.json`
+- **THEN** the record states the decision, its basis, and that it is this project's judgement rather than the provider's authorisation, and `reusable` still reads `unknown`
+
+#### Scenario: a missing source record blocks the public push
+
+- **GIVEN** a file under `data/raw/` has no source record in `data/sources.json`
 - **WHEN** a maintainer prepares to push the repository publicly
-- **THEN** the pending record stands as a blocker and the push does not proceed until the terms are resolved
+- **THEN** the absence stands as a blocker and the push does not proceed until the record is added

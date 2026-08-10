@@ -12,10 +12,10 @@
 
 ## 3. 自動部署
 
-- [ ] 3.1 新增 GitHub Actions workflow，於推送到 master 時及手動觸發（workflow_dispatch）時，在 ubuntu-latest 上 checkout、setup-python、執行組建腳本，並以 actions/upload-pages-artifact 上傳 _site/、actions/deploy-pages 發佈；權限只授予 pages: write 與 id-token: write；組建腳本失敗時 workflow 隨之失敗且不發佈。驗證：以 workflow_dispatch 手動觸發一次，確認流程完成且 Pages 根網址（不帶 /site/ 路徑）呈現儀表板；在分支上暫時使組建腳本失敗並觸發，確認 workflow 失敗且未產生新的部署。涵蓋 Requirement: Deployment is automated from the default branch、Requirement: Local preview and CI publish share one build path；實作 design 決策五：GitHub Actions 於推送 master 時發佈。
+- [x] 3.1 新增 GitHub Actions workflow，於推送到 master 時及手動觸發（workflow_dispatch）時，在 ubuntu-latest 上 checkout、setup-python、執行組建腳本，並以 actions/upload-pages-artifact 上傳 _site/、actions/deploy-pages 發佈；權限只授予 pages: write 與 id-token: write；組建腳本失敗時 workflow 隨之失敗且不發佈。驗證：以 workflow_dispatch 手動觸發一次，確認流程完成且 Pages 根網址（不帶 /site/ 路徑）呈現儀表板；在分支上暫時使組建腳本失敗並觸發，確認 workflow 失敗且未產生新的部署。涵蓋 Requirement: Deployment is automated from the default branch、Requirement: Local preview and CI publish share one build path；實作 design 決策五：GitHub Actions 於推送 master 時發佈。
 - [x] 3.2 組建產物不入庫：.gitignore 加入 _site/；README 補上 GitHub Pages 來源需在 repo 設定中設為 GitHub Actions 的說明，因該項無法由 repo 內的檔案保證。驗證：執行組建腳本後 git status 顯示工作區乾淨（無 _site 相關未追蹤項目）；README 該段落經閱讀確認含設定位置與所選選項。
 
 ## 4. 資料授權與首次公開
 
 - [x] 4.1 data/sources.json 記錄 data/raw/moi-year-end-population-by-sex-age.xls 的再散布條款為待確認，不為其填入任何開放授權宣稱；其餘 data/raw 檔案的再散布條款確認皆已有來源記錄。驗證：以 JSON 解析器讀取 data/sources.json 無誤，且可查到該檔的待確認記錄；逐一比對 data/raw 下已入庫檔案，確認每個都能在 sources.json 找到對應來源記錄。涵蓋 Requirement: Redistribution licensing is settled before the repository is made public；實作 design 決策六：授權查證是推送前的阻擋條件。
-- [ ] 4.2 查證 data/raw/moi-year-end-population-by-sex-age.xls 的再散布條款並將結論寫回 data/sources.json 取代待確認記錄；結論為允許再散布時，設定 git remote 並推送至使用者建立的 public repo，完成首次部署。若結論為不允許再散布，停止推送並回報，該檔的處置屬於 data/raw 入庫策略、不在本 change 範圍內。驗證：sources.json 中該檔已無待確認標記而有明確條款結論；推送後以瀏覽器實際開啟 Pages 網址，確認站台可達且四個面板與席次模擬器渲染正常——不以 workflow 顯示成功為唯一判準。涵蓋 Requirement: Redistribution licensing is settled before the repository is made public。
+- [x] 4.2 查證 data/raw/moi-year-end-population-by-sex-age.xls 的再散布條款並將結論寫回 data/sources.json 取代待確認記錄；結論為允許再散布時，設定 git remote 並推送至使用者建立的 public repo，完成首次部署。若結論為不允許再散布，停止推送並回報，該檔的處置屬於 data/raw 入庫策略、不在本 change 範圍內。驗證：sources.json 中該檔已無待確認標記而有明確條款結論；推送後以瀏覽器實際開啟 Pages 網址，確認站台可達且四個面板與席次模擬器渲染正常——不以 workflow 顯示成功為唯一判準。涵蓋 Requirement: Redistribution licensing is settled before the repository is made public。
