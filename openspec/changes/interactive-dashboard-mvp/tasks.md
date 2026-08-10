@@ -40,5 +40,5 @@
 
 ## 6. 溯源介面
 
-- [ ] 6.1 四個面板中每個顯示的數字皆可被啟動以查看其提供機關、資料基準日與性質標籤，資料取自 processed JSON 的 _fieldNature 與 data/sources.json。驗證：於每個面板各任選一個數字啟動，皆顯示機關、日期、性質三項資訊。涵蓋 Requirement: Every displayed number is traceable。
-- [ ] 6.2 介面區辨零值、該範圍無資料、以及該期間欄位不存在三種狀態：平埔欄位為 0 時顯示尚無登記，時間序列涵蓋 2025-10 以前時該區間不繪點亦不繪零。驗證：平埔數列在 2025-10 以前無資料點，2025-11 起顯示為零並帶有尚無登記標示。涵蓋 Requirement: Distinguish absent data from zero；實作 design 失敗模式與範圍界線兩節。
+- [x] 6.1 四個面板中每個顯示的數字皆可被啟動以查看其提供機關、資料基準日與性質標籤，資料取自 processed JSON 的 _fieldNature 與 data/sources.json。驗證：於每個面板各任選一個數字啟動，皆顯示機關、日期、性質三項資訊。涵蓋 Requirement: Every displayed number is traceable。
+- [x] 6.2 介面區辨零值、該範圍無資料、以及該期間欄位不存在三種狀態：平埔欄位為 0 時顯示尚無登記，時間序列涵蓋 2025-10 以前時該區間不繪點亦不繪零。驗證：平埔數列在 2025-10 以前無資料點，2025-11 起顯示為零並帶有尚無登記標示。涵蓋 Requirement: Distinguish absent data from zero；實作 design 失敗模式與範圍界線兩節。

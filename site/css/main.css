@@ -777,3 +777,103 @@ fieldset.sim-control { margin: 0; }
 }
 
 .tl-note strong { color: var(--text); }
+
+/* --- 溯源介面 --- */
+
+/* 可查來源的數字。外觀維持數字本身的樣子，只用虛線底線暗示可點——
+   不做成按鈕的模樣，否則會蓋過數字本身。 */
+.prov-trigger {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-bottom: 1px dotted var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.prov-trigger:hover { border-bottom-style: solid; border-bottom-color: var(--accent); }
+
+.prov-popover {
+  position: absolute;
+  z-index: 500;
+  max-width: 24rem;
+  padding: 0.9rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.prov-close {
+  float: right;
+  font-size: 1.1rem;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.prov-field { margin: 0 0 0.4rem; font-weight: 600; color: var(--text); }
+.prov-nature { margin: 0 0 0.4rem; }
+.prov-note { margin: 0 0 0.7rem; color: var(--text-muted); }
+
+.prov-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 0.8rem;
+  margin: 0;
+}
+
+.prov-meta dt { color: var(--text-muted); }
+.prov-meta dd { margin: 0; }
+
+.prov-link { margin: 0.6rem 0 0; }
+.prov-foot {
+  margin: 0.6rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.prov-loading { margin: 0; color: var(--text-muted); }
+
+/* 三態對照表：欄位不存在 / 值為零 / 預期非零。
+   這張表本身就是規格——把抽象的資料紀律變成看得見的對照。 */
+.state-table {
+  width: 100%;
+  margin: 0.9rem 0;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.state-table caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 0.4rem;
+  color: var(--text);
+}
+
+.state-table th,
+.state-table td {
+  padding: 0.4rem 0.7rem 0.4rem 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.state-table thead th {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.state-table td[data-state] { padding-left: 0.7rem; border-left: 3px solid var(--border); }
+.state-table td[data-state="absent"] { border-left-color: var(--text-muted); }
+.state-table td[data-state="zero"] { border-left-color: var(--gap-warn); }
+.state-table td[data-state="future"] { border-left-color: var(--accent); }

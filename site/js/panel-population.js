@@ -10,6 +10,7 @@
  */
 
 import { createPanel, fmt } from './panel.js';
+import { traceable } from './provenance.js';
 
 const RECOGNISED = [
   ['amis', '阿美族'], ['atayal', '泰雅族'], ['paiwan', '排灣族'], ['bunun', '布農族'],
@@ -66,7 +67,13 @@ function render(container, [dataset], region) {
 
   const heading = document.createElement('h3');
   heading.className = 'chart-title';
-  heading.textContent = `${region.name}原住民族人口 ${fmt(row.indigenous_total)} 人`;
+  heading.append(`${region.name}原住民族人口 `);
+  heading.append(traceable(fmt(row.indigenous_total), {
+    sourceId: dataset._sourceId,
+    field: '原住民族人口',
+    nature: dataset._fieldNature.indigenous_total,
+  }));
+  heading.append(' 人');
   container.append(heading);
 
   const canvasWrap = document.createElement('div');
@@ -145,6 +152,42 @@ function render(container, [dataset], region) {
     + '目前值為 0——是「還沒有人登記」的官方事實，不是資料缺漏。'
     + '西拉雅族已於 2026-07-30 核定為第 17 族，身分登記自 2026 年 8 月中開始。';
   box.append(note);
+
+  /* 三種狀態必須在畫面上分得開，否則讀者無從判斷 0 的意義。
+     這張表本身就是規格——把抽象的紀律變成看得見的對照。 */
+  const states = document.createElement('table');
+  states.className = 'state-table';
+  states.innerHTML = `
+    <caption>平埔族群人口的三種狀態</caption>
+    <thead>
+      <tr><th>期間</th><th>官方欄位</th><th>本站呈現</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>民國 114 年 10 月以前</td>
+        <td>欄位<strong>不存在</strong></td>
+        <td data-state="absent">時間序列不繪點，也不繪為 0</td>
+      </tr>
+      <tr>
+        <td>民國 114 年 11 月起</td>
+        <td>欄位存在，值為 <strong>0</strong></td>
+        <td data-state="zero">顯示「尚無登記」</td>
+      </tr>
+      <tr>
+        <td>2026 年 8 月中起</td>
+        <td>預期出現非零值</td>
+        <td data-state="future">實線，標註「登記自 2026-08 起算」</td>
+      </tr>
+    </tbody>
+  `;
+  box.append(states);
+
+  const why = document.createElement('p');
+  why.className = 'zero-state-note';
+  why.innerHTML = '<strong>為什麼要分：</strong>把「法律上還不存在這個身分」畫成「有 0 個人」是錯的。'
+    + '民國 114 年 10 月以前欄位根本不存在，那段期間沒有「平埔原住民人口為零」這回事，'
+    + '而是這個統計類別尚未產生。';
+  box.append(why);
 
   container.append(box);
 

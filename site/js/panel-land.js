@@ -12,6 +12,7 @@
  */
 
 import { createPanel, fmt } from './panel.js';
+import { traceable } from './provenance.js';
 
 /* 來源只有這五年。x 軸仍完整列出 107-113，缺的年度以 null 呈現為斷線。 */
 const YEARS = [107, 108, 109, 110, 111, 112, 113];
@@ -194,6 +195,25 @@ function render(container, [national, byCounty], region) {
   }
   foot.innerHTML = parts.join('');
   container.append(foot);
+
+  /* 最新年度的總計可查來源。官方值與推算值的性質不同，
+     traceable 讀的是該欄實際的 _fieldNature，不是寫死的。 */
+  const src = countyCode ? byCounty : national;
+  const latest = rows[rows.length - 1];
+  const isOfficial = latest.total_official != null;
+  const stat = document.createElement('p');
+  stat.className = 'chart-foot';
+  stat.append(`民國 ${latest.roc_year} 年保留地總面積 `);
+  stat.append(traceable(
+    (isOfficial ? latest.total_official : latest.total_derived).toLocaleString('zh-TW', { maximumFractionDigits: 3 }),
+    {
+      sourceId: src._sourceId,
+      field: isOfficial ? '所有權部總計' : '所有權部總計（本站推算）',
+      nature: src._fieldNature[isOfficial ? 'total_official' : 'total_derived'],
+    },
+  ));
+  stat.append(' 公頃');
+  container.append(stat);
 }
 
 export const landPanel = createPanel({

@@ -12,6 +12,7 @@
  */
 
 import { createPanel, fmt } from './panel.js';
+import { traceable } from './provenance.js';
 
 const SERIES = [
   { key: '山原', label: '山地原住民', light: '#2a78d6', dark: '#3987e5' },
@@ -123,7 +124,7 @@ function renderTurnout(container, rows) {
   });
 }
 
-function renderRatio(container, metrics) {
+function renderRatio(container, metrics, meta) {
   const t = theme();
 
   const h = document.createElement('h3');
@@ -197,6 +198,19 @@ function renderRatio(container, metrics) {
     區域選舉人數同期成長 ${(((last.區域選舉人數 / first.區域選舉人數) - 1) * 100).toFixed(1)}%。</p>
   `;
   container.append(note);
+
+  /* 關鍵數字可查來源。倍數差距是本站計算值，不是任何官方文件裡的數字——
+     讓讀者點得到這件事，比在文案裡寫一句話有效。 */
+  const stat = document.createElement('p');
+  stat.className = 'chart-foot';
+  stat.append(`${last.年} 年倍數差距 `);
+  stat.append(traceable(String(last.倍數差距), {
+    sourceId: meta._sourceId,
+    field: '倍數差距',
+    nature: meta._fieldNature['倍數差距'],
+  }));
+  stat.append(' 倍');
+  container.append(stat);
 }
 
 export const turnoutPanel = createPanel({
@@ -208,5 +222,5 @@ export const turnoutPanel = createPanel({
 export const ratioPanel = createPanel({
   el: '[data-role="ratio-chart"]',
   sources: () => ['processed/legislative-representation.json'],
-  render: (container, [ds]) => renderRatio(container, ds.data),
+  render: (container, [ds]) => renderRatio(container, ds.data, ds),
 });

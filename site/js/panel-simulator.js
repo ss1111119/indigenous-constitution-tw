@@ -13,6 +13,7 @@
  */
 
 import { createPanel, fmt } from './panel.js';
+import { traceable } from './provenance.js';
 
 /* 憲法增修條文第 4 條第 1 項：立法委員自第七屆起一百一十三人；
    第 2 款：自由地區平地原住民及山地原住民各三人。
@@ -466,6 +467,29 @@ function render(container, [popData, elections]) {
       </figure>
       ${basisNote}
     `;
+
+    /* 兩個關鍵占比可查來源。席次占比來自憲法（固定數額），
+       人口占比是本站計算——性質不同，點開就看得出來。 */
+    const seatCell = [...output.querySelectorAll('tr')]
+      .find((tr) => tr.querySelector('th')?.textContent === '席次占比')?.querySelector('td');
+    if (seatCell) {
+      seatCell.textContent = '';
+      seatCell.append(traceable(`${seatShare.toFixed(2)}%`, {
+        sourceId: 'constitution-amendment-art4',
+        field: '席次占比（保障席次 ÷ 總席次）',
+        nature: 'derived-by-this-project',
+      }));
+    }
+    const popCell = [...output.querySelectorAll('tr')]
+      .find((tr) => tr.querySelector('th')?.textContent === '人口占比')?.querySelector('td');
+    if (popCell) {
+      popCell.textContent = '';
+      popCell.append(traceable(`${popShare.toFixed(2)}%`, {
+        sourceId: popData._sourceId,
+        field: '人口占比（原住民人口 ÷ 全國人口）',
+        nature: popData._fieldNature.indigenous_ratio_pct,
+      }));
+    }
   }
 
   root.querySelectorAll('input').forEach((el) => el.addEventListener('input', update));
