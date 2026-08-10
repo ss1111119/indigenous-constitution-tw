@@ -204,16 +204,28 @@ function timelineMarkup() {
         <p class="tl-text">${e.body}</p>
       </div>
     </li>`).join('');
+  /* 收合但不隱藏：summary 自己就帶著「這是待決問題」與下一個期限，
+     所以不展開也讀得到框架；展開才是六個節點的細節。
+     節點數與期限日期由資料推導，新增節點時不必回頭改這行。 */
+  const deadline = TIMELINE.find((e) => e.future);
   return `
-    <section class="timeline">
-      <h3>為什麼席次是一個待決問題</h3>
-      <ol class="tl-list">${items}</ol>
-      <p class="tl-note">
-        上一次立法逼到距憲法期限剩 <strong>5 天</strong>才完成。
-        下一個期限是 <strong>2028 年 10 月 23 日</strong>，關於平埔族群政治參與的立法
-        目前尚未提出。各節點皆可點擊至全國法規資料庫或憲法法庭原文。
-      </p>
-    </section>`;
+    <details class="timeline-wrap">
+      <summary>
+        <h3>為什麼席次是一個待決問題</h3>
+        <span class="tl-summary-hint">
+          憲法法庭要求修法，下一個期限 ${deadline ? deadline.date : '未定'}
+          ——共 ${TIMELINE.length} 個節點
+        </span>
+      </summary>
+      <section class="timeline">
+        <ol class="tl-list">${items}</ol>
+        <p class="tl-note">
+          上一次立法逼到距憲法期限剩 <strong>5 天</strong>才完成。
+          下一個期限是 <strong>2028 年 10 月 23 日</strong>，關於平埔族群政治參與的立法
+          目前尚未提出。各節點皆可點擊至全國法規資料庫或憲法法庭原文。
+        </p>
+      </section>
+    </details>`;
 }
 
 function anchorMarkup() {
@@ -242,6 +254,21 @@ function render(container, [popData, elections]) {
   const root = document.createElement('div');
   root.className = 'sim';
   root.innerHTML = `
+    <div class="sim-basis">
+      <span class="sim-basis-label">代表性的分母：</span>
+      <label class="sim-radio-inline">
+        <input type="radio" name="sim-basis" value="population" checked><span>人口</span>
+      </label>
+      <label class="sim-radio-inline">
+        <input type="radio" name="sim-basis" value="electors"><span>選舉人</span>
+      </label>
+    </div>
+
+    <!-- 結果放在控制項【之前】：初始狀態即為現況，所以這一區在使用者還沒動任何
+         東西時就已經是有意義的內容——它是「現在的制度長什麼樣」。把它放在三段
+         控制項與說明之後，會讓讀者滾過一屏才看到本面板真正的輸出。 -->
+    <div class="sim-output" id="sim-output"></div>
+
     <div class="sim-controls">
       <div class="sim-control">
         <label for="sim-plains">平埔族群納入人口數</label>
@@ -250,11 +277,17 @@ function render(container, [popData, elections]) {
         <p class="sim-scale-note" id="sim-plains-scale"></p>
         <div class="sim-anchors">${anchorMarkup()}</div>
         <p class="sim-caption">
-          滑桿上限為 ${fmt(indigenousNow)} 人。選這個數字的理由只有一個——
-          <strong>它是目前原住民族人口，是一個有出處的真實數字，方便當量級參照</strong>。
-          它不代表平埔族群人口的推估、上限或合理範圍。
-          除了上面標出的兩個點以外，滑桿上的任何數值都沒有官方或學術依據。
+          除了上面標出的 ${ANCHORS.length} 個點以外，滑桿上的任何數值都
+          <strong>沒有官方或學術依據</strong>。
         </p>
+        <details class="sim-why">
+          <summary>為什麼上限是 ${fmt(indigenousNow)} 人</summary>
+          <p>
+            選這個數字的理由只有一個——
+            <strong>它是目前原住民族人口，是一個有出處的真實數字，方便當量級參照</strong>。
+            它不代表平埔族群人口的推估、上限或合理範圍。
+          </p>
+        </details>
       </div>
 
       <div class="sim-control">
@@ -271,13 +304,18 @@ function render(container, [popData, elections]) {
           </div>
         </div>
         <p class="sim-caption">
-          這條滑桿只有「現行 ${STATUTORY.indigenous} 席」一個有依據的點，其餘範圍純為操作空間、無制度依據。
-          <br>
-          ⚠️ 上限 20 是任意設定。現況 ${STATUTORY.indigenous} 席因此落在偏左，
-          幾何上看起來像是在暗示「往上調」。改成以現況為中心的對稱範圍同樣不中立——
-          那會暗示「減少席次」與「增加席次」是同等可能的選項，而減少需要修憲推翻既有保障。
-          兩種做法都帶有立場，這裡選擇把它講明而不是假裝解決。
+          這條滑桿只有「現行 ${STATUTORY.indigenous} 席」一個有依據的點，
+          其餘範圍<strong>純為操作空間、無制度依據</strong>。
         </p>
+        <details class="sim-why">
+          <summary>⚠️ 為什麼滑桿的上限本身就帶有立場</summary>
+          <p>
+            上限 20 是任意設定。現況 ${STATUTORY.indigenous} 席因此落在偏左，
+            幾何上看起來像是在暗示「往上調」。改成以現況為中心的對稱範圍同樣不中立——
+            那會暗示「減少席次」與「增加席次」是同等可能的選項，而減少需要修憲推翻既有保障。
+            兩種做法都帶有立場，這裡選擇把它講明而不是假裝解決。
+          </p>
+        </details>
       </div>
 
       <fieldset class="sim-control">
@@ -291,24 +329,18 @@ function render(container, [popData, elections]) {
           <span>增額至 113 席以上</span>
         </label>
         <p class="sim-caption">
-          這兩者不是同一個算式。重分配是<strong>零和</strong>的——原住民增一席，區域立委就少一席；
-          增額則是總席次變多、區域席次不變。兩者都需要修法或修憲。
+          這兩者不是同一個算式，且<strong>都需要修法或修憲</strong>。
           本站不評價何者較佳，只呈現各自的算術結果。
         </p>
+        <details class="sim-why">
+          <summary>兩種算法差在哪裡</summary>
+          <p>
+            重分配是<strong>零和</strong>的——原住民增一席，區域立委就少一席；
+            增額則是總席次變多、區域席次不變。
+          </p>
+        </details>
       </fieldset>
     </div>
-
-    <div class="sim-basis">
-      <span class="sim-basis-label">代表性的分母：</span>
-      <label class="sim-radio-inline">
-        <input type="radio" name="sim-basis" value="population" checked><span>人口</span>
-      </label>
-      <label class="sim-radio-inline">
-        <input type="radio" name="sim-basis" value="electors"><span>選舉人</span>
-      </label>
-    </div>
-
-    <div class="sim-output" id="sim-output"></div>
 
     <details class="sim-assumptions">
       <summary>本模擬固定不變的假設（3 項）</summary>

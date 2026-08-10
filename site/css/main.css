@@ -653,6 +653,10 @@ fieldset.sim-control { margin: 0; }
   border-radius: 4px;
 }
 
+/* 上間距是它原本接在控制項之後才需要的。結果上移後它成為 .sim 的首個元素，
+   此時上間距與外層容器的間距重複，在面板開頭留下死空間。 */
+.sim > .sim-basis:first-child { margin-top: 0; }
+
 .sim-basis-label { font-weight: 600; }
 .sim-radio-inline { cursor: pointer; }
 
@@ -683,6 +687,53 @@ fieldset.sim-control { margin: 0; }
 .sim-assumptions summary {
   cursor: pointer;
   font-weight: 600;
+}
+
+/* 控制項的「為什麼」：預設收合。收合的判準是——承重的那一句話留在外面，
+   收進來的是它的理由。例如「滑桿上的數值沒有官方依據」必須看得到，
+   「為什麼上限選這個數字」可以收。免責聲明本身不收合，否則就是把它藏起來。 */
+.sim-why {
+  margin: 0.5rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.sim-why summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.sim-why p { margin: 0.6rem 0 0; }
+
+/* 法制時間軸：同樣預設收合，但 summary 自帶「這是待決問題」與下一個期限，
+   不展開也讀得到框架——它是模擬器成立的前提，不能只剩一個標題。 */
+.timeline-wrap {
+  /* 不設下間距：它是 .chart 的唯一子元素，而 .chart 已有下間距，
+     兩者相加會在面板開頭留下一塊死空間。 */
+  margin: 0;
+  padding: 0.8rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.timeline-wrap > summary { cursor: pointer; }
+.timeline-wrap > summary h3 { display: inline; margin: 0; font-size: 1rem; }
+.timeline-wrap .tl-summary-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+/* 巢套在 timeline-wrap 內時取消自身的框與底色，否則會出現雙層邊框。
+   .timeline 的獨立樣式保留著，供它日單獨使用。 */
+.timeline-wrap .timeline {
+  margin: 1.1rem 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
 }
 
 .sim-assumptions ol { margin: 0.9rem 0 0; padding-left: 1.3rem; }
