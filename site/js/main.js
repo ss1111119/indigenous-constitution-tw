@@ -10,6 +10,7 @@ import { populationPanel } from './panel-population.js';
 import { mapPanel } from './panel-map.js';
 import { turnoutPanel, ratioPanel } from './panel-election.js';
 import { landPanel } from './panel-land.js';
+import { simulatorPanel } from './panel-simulator.js';
 
 async function main() {
   try {
@@ -39,6 +40,9 @@ async function main() {
   onRegionChange(ratioPanel);
 
   onRegionChange(landPanel);
+
+  /* 模擬器固定為全國。 */
+  onRegionChange(simulatorPanel);
 }
 
 /* 分頁切換後，重算剛顯示出來的面板中的圖表版面。

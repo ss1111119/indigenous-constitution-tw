@@ -472,3 +472,143 @@ main {
 
 .external-links li { margin-bottom: 0.5rem; }
 .external-links li:last-child { margin-bottom: 0; }
+
+/* --- 席次模擬器 --- */
+
+.sim-controls {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 46rem;
+  margin-bottom: 1.75rem;
+}
+
+.sim-control {
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+fieldset.sim-control { margin: 0; }
+.sim-control legend { font-weight: 600; padding: 0 0.35rem; }
+
+.sim-control > label,
+.sim-control legend { font-weight: 600; }
+
+.sim-control input[type="range"] {
+  display: block;
+  width: 100%;
+  margin: 0.6rem 0 0.35rem;
+  accent-color: var(--accent);
+}
+
+.sim-control output {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+/* 有出處的參照點。刻意只標有依據的那幾個——其餘區間沒有依據，
+   標更多刻度會讓人以為那些數值也有來源。
+   限定條件完整寫出而非藏在 hover 裡：看不到的警語等於沒有警語。 */
+.sim-anchors {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.6rem 0 0.25rem;
+  font-size: 0.8125rem;
+}
+
+.anchor {
+  padding: 0.5rem 0.7rem;
+  border-left: 3px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+.anchor-head { margin: 0 0 0.25rem; }
+.anchor-head strong { color: var(--text); font-size: 0.95rem; }
+.anchor-detail { margin: 0; line-height: 1.6; }
+
+.anchor[data-nature="official-statistic"] { border-left-color: var(--accent); }
+.anchor[data-nature="academic-estimate"] { border-left-color: var(--gap-warn); }
+
+.sim-scale-note {
+  margin: 0.2rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* 與現況的差值。兩種算法的代價都要一樣明顯，顏色不承載褒貶——
+   增加與減少用同一種中性色，只用符號區分方向。 */
+.sim-delta {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.02em 0.45em;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.sim-gap {
+  margin: 0.9rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.sim-cost {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface);
+  border-left: 3px solid var(--border);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.sim-caption {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.sim-radio {
+  display: block;
+  margin: 0.4rem 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.sim-table {
+  border-collapse: collapse;
+  min-width: 22rem;
+}
+
+.sim-table caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+}
+
+.sim-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05em 0.55em;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.sim-table th,
+.sim-table td {
+  padding: 0.4rem 0.9rem 0.4rem 0;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.sim-table th { font-weight: 400; color: var(--text-muted); }
+.sim-table td { font-variant-numeric: tabular-nums; }
+
+.sim-row-key th { color: var(--text); font-weight: 600; }
+.sim-row-key td { font-weight: 600; font-size: 1.05rem; }
