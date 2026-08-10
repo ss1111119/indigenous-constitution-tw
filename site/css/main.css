@@ -613,6 +613,48 @@ fieldset.sim-control { margin: 0; }
 .sim-row-key th { color: var(--text); font-weight: 600; }
 .sim-row-key td { font-weight: 600; font-size: 1.05rem; }
 
+/* 結果卡片：三個關鍵數字給一般讀者，下面的「計算依據」表格給要驗算的人。
+   兩者放在同一區，不必在頁面之間跳。
+
+   兩個占比【只】出現在卡片上、不在表格中重複，因為它們掛著可溯源元素——
+   同一個數字出現兩次，就會有一份沒有溯源。 */
+.sim-result-head {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.sim-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.sim-card {
+  flex: 1 1 11rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.sim-card-label {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* 大數字。這是本面板的輸出，字級要能一眼讀到，而不是比正文大 5%。 */
+.sim-card-value {
+  margin: 0.25rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* 差值不與主數字爭視覺重量——它是比較，不是答案本身。 */
+.sim-card-value .sim-delta { font-size: 0.9375rem; font-weight: 600; }
+
 /* 議會席次圖：手寫 SVG。顏色沿用模擬器的類別配色，順序固定不隨數量重配。 */
 .sim-figure { margin: 1.5rem 0 0; }
 

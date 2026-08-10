@@ -416,6 +416,20 @@ function render(container, [popData, elections]) {
       return `<span class="sim-delta" data-dir="${d > 0 ? 'up' : 'down'}">${d > 0 ? '＋' : '−'}${Math.abs(d)}</span>`;
     };
 
+    /* 占比的差值以百分點表示，不是百分比——「席次占比由 5.31% 變成 7.08%」
+       的差是 1.77 個【百分點】，寫成 1.77% 會被讀成相對變化，那是另一個數字。
+       小於 0.005 視為無變化，與 gapPhrase 的判準一致，避免顯示 ＋0.00。 */
+    const deltaPP = (now, base) => {
+      const d = now - base;
+      if (Math.abs(d) < 0.005) return '';
+      return `<span class="sim-delta" data-dir="${d > 0 ? 'up' : 'down'}">${d > 0 ? '＋' : '−'}${Math.abs(d).toFixed(2)} 個百分點</span>`;
+    };
+
+    /* 現況的兩個占比，作為卡片差值的基準。用 STATUTORY 與未納入平埔的人口，
+       不是「使用者上一次的設定」——基準必須固定，否則差值失去參照。 */
+    const statusQuoSeatShare = pct(STATUTORY.indigenous, STATUTORY.total);
+    const statusQuoPopShare = pct(indigenousNow, populationNow);
+
     /* 「超額代表」帶價值判斷，改用中性描述讓讀者自行判斷
        這是保障的成效還是過度。 */
     const gapPhrase = Math.abs(gap) < 0.005
@@ -467,22 +481,39 @@ function render(container, [popData, elections]) {
     }
 
     output.innerHTML = `
+      <p class="sim-result-head">
+        ${isStatusQuo ? '現況' : '模擬結果'}
+        ${isStatusQuo ? '' : '<span class="sim-badge">依你輸入的參數計算，不構成制度主張</span>'}
+      </p>
+
+      <!-- 三張卡片是答案，下面的表格是算式的組成。兩個占比【只】出現在卡片上，
+           不在表格中重複——它們要掛可溯源元素，同一個數字出現兩次就會有一份
+           沒有溯源，違反「每個呈現的數字都要追得到來源」。 -->
+      <div class="sim-cards">
+        <div class="sim-card">
+          <p class="sim-card-label">原住民保障席次</p>
+          <p class="sim-card-value">${seatsResult.indigenous} 席 ${delta(seatsResult.indigenous, STATUTORY.indigenous)}</p>
+        </div>
+        <div class="sim-card">
+          <p class="sim-card-label">席次占比</p>
+          <p class="sim-card-value" data-role="card-seat-share">${seatShare.toFixed(2)}% ${deltaPP(seatShare, statusQuoSeatShare)}</p>
+        </div>
+        <div class="sim-card">
+          <p class="sim-card-label">人口占比</p>
+          <p class="sim-card-value" data-role="card-pop-share">${popShare.toFixed(2)}% ${deltaPP(popShare, statusQuoPopShare)}</p>
+        </div>
+      </div>
+
+      <p class="sim-gap">${gapPhrase}。</p>
       <table class="sim-table">
-        <caption>
-          ${isStatusQuo ? '現況' : '模擬結果'}
-          ${isStatusQuo ? '' : '<span class="sim-badge">依你輸入的參數計算，不構成制度主張</span>'}
-        </caption>
+        <caption>計算依據</caption>
         <tbody>
-          <tr><th>原住民保障席次</th><td>${seatsResult.indigenous} 席 ${delta(seatsResult.indigenous, STATUTORY.indigenous)}</td></tr>
           <tr><th>區域立委席次</th><td>${seatsResult.regional} 席 ${delta(seatsResult.regional, STATUTORY.regional)}</td></tr>
           <tr><th>立法院總席次</th><td>${seatsResult.total} 席 ${delta(seatsResult.total, STATUTORY.total)}</td></tr>
-          <tr class="sim-row-key"><th>席次占比</th><td>${seatShare.toFixed(2)}%</td></tr>
           <tr><th>原住民族人口</th><td>${fmt(indigenous)} 人 ${delta(indigenous, indigenousNow)}</td></tr>
           <tr><th>全國人口</th><td>${fmt(populationNow)} 人</td></tr>
-          <tr class="sim-row-key"><th>人口占比</th><td>${popShare.toFixed(2)}%</td></tr>
         </tbody>
       </table>
-      <p class="sim-gap">${gapPhrase}。</p>
       ${state.seats === STATUTORY.indigenous ? '' : `<p class="sim-cost">
         此配置相對於現況的變動：${state.method === 'reallocate'
     ? `區域立委由 ${STATUTORY.regional} 席減為 ${seatsResult.regional} 席，立法院總席次不變。`
@@ -502,25 +533,29 @@ function render(container, [popData, elections]) {
 
     /* 兩個關鍵占比可查來源。席次占比來自憲法（固定數額），
        人口占比是本站計算——性質不同，點開就看得出來。 */
-    const seatCell = [...output.querySelectorAll('tr')]
-      .find((tr) => tr.querySelector('th')?.textContent === '席次占比')?.querySelector('td');
+    const seatCell = output.querySelector('[data-role="card-seat-share"]');
     if (seatCell) {
+      const changed = seatCell.querySelector('.sim-delta');
       seatCell.textContent = '';
       seatCell.append(traceable(`${seatShare.toFixed(2)}%`, {
         sourceId: 'constitution-amendment-art4',
         field: '席次占比（保障席次 ÷ 總席次）',
         nature: 'derived-by-this-project',
       }));
+      /* 差值標記在清空時被一併移除，重新掛回去——它不是可溯源的數字本身，
+         而是與現況的比較，掛在溯源元素之外。 */
+      if (changed) seatCell.append(' ', changed);
     }
-    const popCell = [...output.querySelectorAll('tr')]
-      .find((tr) => tr.querySelector('th')?.textContent === '人口占比')?.querySelector('td');
+    const popCell = output.querySelector('[data-role="card-pop-share"]');
     if (popCell) {
+      const changed = popCell.querySelector('.sim-delta');
       popCell.textContent = '';
       popCell.append(traceable(`${popShare.toFixed(2)}%`, {
         sourceId: popData._sourceId,
         field: '人口占比（原住民人口 ÷ 全國人口）',
         nature: popData._fieldNature.indigenous_ratio_pct,
       }));
+      if (changed) popCell.append(' ', changed);
     }
   }
 
