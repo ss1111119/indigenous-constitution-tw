@@ -7,7 +7,7 @@
 import { onRegionChange } from './state.js';
 import { initRegionSelector, bindScopeLabel } from './region.js';
 import { populationPanel } from './panel-population.js';
-import { mapPanel } from './panel-map.js';
+import { mapPanel, refreshMapLayout } from './panel-map.js';
 import { turnoutPanel, ratioPanel } from './panel-election.js';
 import { landPanel } from './panel-land.js';
 import { simulatorPanel, timelinePanel } from './panel-simulator.js';
@@ -51,7 +51,12 @@ async function main() {
  * 為什麼需要：分頁以 CSS display 切換，非作用中的面板在建立圖表時寬度為 0。
  * Chart.js 之後會重繪刻度，但資料點的版面不會跟著重算——症狀是刻度橫跨滿版、
  * 資料點卻全擠在最左端，看起來像資料錯了，其實是版面沒更新。
- * Leaflet 同理，隱藏時初始化的地圖需要 invalidateSize。
+ * Leaflet 同理，隱藏時初始化的地圖需要重新量測。
+ *
+ * 地圖的重算走 panel-map.js 匯出的入口，不發全域 window resize 事件：
+ * 廣播會被頁面上每一個 Leaflet 實例（含仍隱藏的）與每一個 resize 監聽器收到，
+ * 而這裡的意圖只是「這個剛顯示的面板需要重算」。要不要量測、能不能量測，
+ * 由地圖模組自己判斷——它才知道容器此刻有沒有尺寸。
  */
 function refreshVisiblePanel() {
   /* 必須等一幀：change 事件觸發時 CSS 的 display 尚未套用完成，
@@ -68,9 +73,8 @@ function refreshVisiblePanel() {
       chart.resize();
       chart.update('none');
     }
-    /* Leaflet 的容器在隱藏時尺寸為 0，顯示後須告知它重新量測。 */
     if (panel.querySelector('.leaflet-container')) {
-      window.dispatchEvent(new Event('resize'));
+      refreshMapLayout();
     }
   });
 }
