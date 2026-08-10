@@ -612,3 +612,89 @@ fieldset.sim-control { margin: 0; }
 
 .sim-row-key th { color: var(--text); font-weight: 600; }
 .sim-row-key td { font-weight: 600; font-size: 1.05rem; }
+
+/* 議會席次圖：手寫 SVG。顏色沿用模擬器的類別配色，順序固定不隨數量重配。 */
+.sim-figure { margin: 1.5rem 0 0; }
+
+.hemicycle {
+  display: block;
+  width: 100%;
+  max-width: 26rem;
+}
+
+.sim-figure figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.sim-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.9rem;
+}
+
+.sim-key i {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+}
+
+/* 基數切換 */
+.sim-basis {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 1.5rem 0 0.75rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.sim-basis-label { font-weight: 600; }
+.sim-radio-inline { cursor: pointer; }
+
+.sim-basis-note {
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9375rem;
+}
+
+.sim-basis-note h4 { margin: 0 0 0.7rem; font-size: 0.95rem; }
+.sim-basis-note p { margin: 0.8rem 0 0; }
+.sim-basis-caveat { color: var(--text-muted); font-size: 0.875rem; }
+
+/* 固定假設：預設收合但可展開。收合是為了不淹沒主要輸出，
+   不是為了藏起來——summary 明寫有幾項。 */
+.sim-assumptions {
+  margin: 1.5rem 0 0;
+  padding: 0.8rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9375rem;
+}
+
+.sim-assumptions summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sim-assumptions ol { margin: 0.9rem 0 0; padding-left: 1.3rem; }
+.sim-assumptions li { margin-bottom: 0.7rem; color: var(--text-muted); }
+.sim-assumptions li strong { color: var(--text); }
+
+.sim-undetermined {
+  margin: 1rem 0 0;
+  padding: 0.8rem 1rem;
+  background: var(--bg);
+  border-left: 3px solid var(--gap-warn);
+  color: var(--text-muted);
+}
+
+.sim-undetermined strong { color: var(--text); }
