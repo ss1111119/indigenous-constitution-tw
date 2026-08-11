@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="議場席次配置">
+  <!-- 兩道同心半圓，取自議場席次圖（panel-simulator 的主視覺）。
+       刻意不畫成一顆一顆的席次點：分頁圖示只有 16px，點會糊成一團，
+       弧線在該尺寸下仍讀得出「半圓＝議場」。
+       底色取自 main.css 的 accent 色，在淺色與深色分頁列上都有足夠對比，
+       故不做深色版。
+       註：XML 註解內不可出現連續兩個減號，故此處不寫 CSS 變數的完整名稱。 -->
+  <rect width="64" height="64" rx="13" fill="#7a4a2b"/>
+  <path d="M11 45 A21 21 0 0 1 53 45" fill="none" stroke="#fbfaf8" stroke-width="7"/>
+  <path d="M21 45 A11 11 0 0 1 43 45" fill="none" stroke="#f0e6dc" stroke-width="7"/>
+</svg>

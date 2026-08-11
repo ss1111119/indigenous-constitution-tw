@@ -5,6 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>臺灣原住民族憲政代表性與土地資料</title>
 <meta name="description" content="用公開資料理解臺灣原住民族的人口、選舉與憲政代表性，並提供席次分配的制度模擬。">
+
+<!--
+  分享卡片與圖示。
+
+  og:image 必須是絕對網址，各家爬蟲不會解析站台相對路徑；也因此這裡寫死
+  GitHub Pages 的網址，若日後改用自訂網域，本區塊的四個網址要一起改。
+  （DATA_BASE 那種「唯一定義處」的作法在這裡用不上——meta 標籤沒有變數。）
+
+  og:image 用 PNG 不用 SVG：Facebook、LINE 等平台不支援 SVG 分享圖。
+  favicon 反過來用 SVG，單檔即可涵蓋各種尺寸；icon-180.png 只為 iOS
+  加入主畫面時使用，缺了會被抓一張網頁截圖當圖示。
+  三個圖檔的產生方式見 scripts/make-brand-assets.py（不屬於組建流程）。
+-->
+<link rel="canonical" href="https://ss1111119.github.io/indigenous-constitution-tw/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="臺灣原住民族憲政代表性與土地資料">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:url" content="https://ss1111119.github.io/indigenous-constitution-tw/">
+<meta property="og:title" content="臺灣原住民族憲政代表性與土地資料">
+<meta property="og:description" content="原住民族的人口、選舉與土地資料分散在三個機關，沒有一個地方把它們接起來。這個網站做的是整合與計算——每一個數字都能追到來源，並標明它是官方統計、學術估計，還是本站自己算的。">
+<meta property="og:image" content="https://ss1111119.github.io/indigenous-constitution-tw/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="臺灣原住民族憲政代表性與土地資料——人口、選舉、土地、席次模擬">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="臺灣原住民族憲政代表性與土地資料">
+<meta name="twitter:description" content="原住民族的人口、選舉與土地資料分散在三個機關，沒有一個地方把它們接起來。這個網站做的是整合與計算。">
+<meta name="twitter:image" content="https://ss1111119.github.io/indigenous-constitution-tw/og-image.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#7a4a2b">
+
 <link rel="stylesheet" href="vendor/leaflet.css">
 <link rel="stylesheet" href="css/main.css">
 </head>
