@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines what the population, election, and land panels display: tribe composition and geographic distribution, turnout and the representation gap over legislative terms, and reserved land ownership over time. Also fixes how absent data is stated and when to link to existing published work instead of reproducing it.
+Defines what the population, election, and land panels display: tribe composition and geographic distribution, turnout and the representation gap over legislative terms, and reserved land ownership over time. Also fixes how absent data is stated, when to link to existing published work instead of reproducing it, and how a chart drawn on canvas carries a text alternative — an accessible name that is present whether or not the table is expanded, plus a table of the plotted values derived from the same data the chart is given.
 
 ## Requirements
 
@@ -28,6 +28,7 @@ The tribe breakdown SHALL include the undeclared-tribe count so that the display
 - **WHEN** the 16 recognised tribes, the 10 plains groups, and the undeclared count are summed
 - **THEN** the result equals 637,620
 
+---
 ### Requirement: Population panel distinguishes indigenous districts
 
 The population panel SHALL indicate which townships are designated indigenous districts when displaying township-level data.
@@ -37,6 +38,7 @@ The population panel SHALL indicate which townships are designated indigenous di
 - **WHEN** the panel renders townships
 - **THEN** townships designated as indigenous districts are visually distinguished from those that are not
 
+---
 ### Requirement: Election panel shows turnout and representation gap over time
 
 The election panel SHALL show turnout by electoral category across the legislative terms held under the current 113-seat system, and the ratio between electors per regional seat and electors per indigenous seat for the same terms.
@@ -53,6 +55,7 @@ The election panel SHALL show turnout by electoral category across the legislati
 | 2008 | 230,912 | 53,845 | 4.29 |
 | 2024 | 260,695 | 73,033 | 3.57 |
 
+---
 ### Requirement: Election panel explains the institutional cause of the converging ratio
 
 The election panel SHALL state that the indigenous seat count is fixed by constitutional provision and does not vary with population, while regional seats are apportioned by population.
@@ -62,6 +65,7 @@ The election panel SHALL state that the indigenous seat count is fixed by consti
 - **WHEN** the ratio trend is displayed
 - **THEN** the panel states that indigenous seats are a fixed number and regional seats are apportioned by population
 
+---
 ### Requirement: Land panel shows ownership composition over time
 
 The land panel SHALL show reserved land area by ownership category across the available years for the selected scope, with public and private areas distinguishable.
@@ -78,6 +82,7 @@ The land panel SHALL show reserved land area by ownership category across the av
 | 110 | 265,269.216 | 129,910.314 | 135,135.872 |
 | 113 | 265,766.858 | 136,809.112 | 128,762.884 |
 
+---
 ### Requirement: Land panel states when a county has no reserved land
 
 The land panel SHALL state that a county has no indigenous reserved land when the source contains no records for it.
@@ -87,6 +92,7 @@ The land panel SHALL state that a county has no indigenous reserved land when th
 - **WHEN** a county with no reserved land records is selected
 - **THEN** the panel states that the county has no indigenous reserved land, and renders no chart implying a zero measurement
 
+---
 ### Requirement: Link to external work rather than reproducing it
 
 Panels SHALL link to existing published visualisations for population distribution mapping, migration, and tribal settlement locations rather than reproducing them.
@@ -95,3 +101,66 @@ Panels SHALL link to existing published visualisations for population distributi
 
 - **WHEN** the population panel renders
 - **THEN** it includes links to the external population distribution and settlement resources
+
+---
+### Requirement: Charts drawn on canvas carry a text alternative
+
+A chart drawn on a `canvas` element conveys nothing to assistive technology on its own. Every such chart SHALL carry an accessible name and summary describing what the chart shows and the categories or periods it covers, and SHALL additionally offer the values it plots in a table the reader can reach.
+
+The accessible name SHALL be present whether or not the table is expanded, because a collapsed disclosure is absent from the accessibility tree. The table alone therefore does not satisfy this requirement.
+
+The table SHALL present the same values the chart plots, derived from the same data the chart is given, so that the two cannot state different numbers.
+
+#### Scenario: every canvas chart is named
+
+- **WHEN** a panel containing a canvas chart renders
+- **THEN** that canvas has an image role and a non-empty accessible name summarising what the chart shows and what it covers
+
+#### Scenario: plotted values are available as a table
+
+- **WHEN** a reader opens the table offered with a chart
+- **THEN** the table lists one row per category or period the chart plots, and one value column per series the chart draws
+
+#### Scenario: the table cannot drift from the chart
+
+- **GIVEN** a chart and its table
+- **WHEN** the values the chart is given change
+- **THEN** the table shows the changed values, because it is derived from the same data rather than assembled separately
+
+#### Scenario: absent data stays distinguishable in the table
+
+- **GIVEN** a series with no data for a period, alongside a series whose value for some period is zero
+- **WHEN** the table renders
+- **THEN** the absent period shows a not-available marker and the zero shows as zero, and the two are different text
+
+##### Example: reserved land table across the recorded years
+
+| Year | Value shown | Notes |
+| --- | --- | --- |
+| 民國 107 年 | the recorded area | data exists |
+| 民國 108 年 | not-available marker | no data collected; not zero, not blank |
+| 民國 109 年 | not-available marker | no data collected; not zero, not blank |
+| 民國 110 年 | the recorded area | data exists |
+
+#### Scenario: the chart itself is unchanged
+
+- **WHEN** the text alternative and table are added to a chart
+- **THEN** the chart's axes, colour scale, legend, plotted points, and its breaks across periods with no data all render as before
+
+<!-- @trace
+source: chart-table-view
+updated: 2026-08-11
+code:
+  - site/vendor/LICENSE-chartjs.txt
+  - site/css/main.css
+  - site/js/panel-simulator.js
+  - site/js/panel.js
+  - LICENSE
+  - site/js/panel-population.js
+  - README.md
+  - site/vendor/LICENSE-leaflet.txt
+  - data/sources.json
+  - site/js/panel-election.js
+  - site/js/panel-land.js
+  - site/vendor/README.md
+-->
