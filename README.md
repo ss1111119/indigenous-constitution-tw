@@ -2,15 +2,19 @@
 
 用公開資料理解臺灣原住民族的人口、土地、選舉與政治代表性，並提供憲政制度的席次模擬。
 
+**🌐 <https://ss1111119.github.io/indigenous-constitution-tw/>**
+
 ## 目前階段
 
-**第二階段：儀表板已完成，部署中**
+**第二階段：儀表板已上線**
 
 第一階段的可行性研究產出 [`docs/feasibility-study.md`](docs/feasibility-study.md)，
 內容包含資料可行性、既有網站調查、資料缺口盤點與技術方案評估。
+⚠️ 該報告是當時的快照、不隨後續工作更新；**資料來源的現行狀態一律以
+[`data/sources.json`](data/sources.json) 為準**。
 
-其結論導出的互動式儀表板 MVP 已完成：人口、選舉、土地三個資料面板與席次模擬器，
-全部資料可溯源至 `data/sources.json`。
+其結論導出的互動式儀表板已上線：人口、選舉、土地三個資料面板與席次模擬器，
+全部資料可溯源至 `data/sources.json`。推送到 `master` 即自動部署。
 
 ## 本機預覽
 
