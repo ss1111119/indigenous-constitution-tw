@@ -18,7 +18,9 @@
     "$natureRule": "判準：derived-by-this-project 的定義是【官方從未發布過這個數字】，不是【有沒有經過計算】。例：原住民族人口 637,620 雖需將 ODRP013 的山原/平原/平埔三欄相加才得到，但原民會月報有直接發布此數且本專案已逐一交叉驗證（男308,451/女329,169 相符），故為 official-statistic；反之人口占比 2.74%、每席代表選民數、倍數差距在任何官方文件中都不存在，故為 derived-by-this-project。用『有沒有計算』當判準會把三欄相加也算成本專案計算值，等於對著官方數字宣稱是自己算的，低估其權威性——方向錯得比標錯類別更嚴重。",
     "verification": "primary-source（親自讀到原始檔或法規原文） | secondary-source（僅新聞或搜尋摘要轉述） | unverified",
     "doi": "若有 DOI（如 OSF 資料集）",
-    "notes": "口徑陷阱、已知缺漏、與其他資料集不一致之處"
+    "notes": "口徑陷阱、已知缺漏、與其他資料集不一致之處",
+    "sha256": "該來源對應的 data/raw 檔案雜湊，物件格式「檔名: SHA-256 十六進位」。一筆來源可對應多個檔案，故一律用物件而非字串。涵蓋的對象見 sha256Kind。",
+    "sha256Kind": "file-bytes：雜湊檔案位元組，適用未加工的下載檔。 | normalised-data：雜湊資料內容的正規化形式，適用本專案分頁合併並加上後設欄位的下載（檔中的 _downloadedAt 每次取得都不同，位元組雜湊必然不符）。正規化方式為：取 data 陣列，以 json.dumps(data, sort_keys=True, ensure_ascii=False, separators=(',',':')) 序列化，編碼為 UTF-8 後取 SHA-256。參數寫在此處而非只存在腳本中，讓不使用本專案腳本的人也能重現。"
   },
   "$schemaStatus": "已定案（stable）。gaps[]、gapsSchema、verification 欄位與 nature 的 compilation 值經 /spectra-discuss 收斂、於 change interactive-dashboard-mvp 的 design.md 決策六確立，並由 tasks 1.1 落實。此後 gaps[].surrogate（決定前端畫虛線或留白）與 gaps[].affects（決定哪些面板連動）為前端契約，變更須經 Spectra change。",
   "$gapsComment": "Data Gap 登記。CLAUDE.md 第2條要求『資料不存在就標記 Data Gap』，但 sources 是『來源清單』，不存在的資料沒有來源可登記，故需此平行陣列。surrogate 欄位是關鍵：讓『有替代推估值』與『完全沒有數字』在資料層就分得開，前端據此決定畫虛線或留白。",
@@ -133,7 +135,11 @@
       "api": false,
       "nature": "official-statistic",
       "notes": "四個格式陷阱詳見 docs/data-spine-check.md：(1)檔名Big5需cp950 (2)資料夾與檔名跨屆不一致 (3)投開票所補零'0'vs'0000'會導致彙總列被誤加總、症狀是數字暴增5-6倍 (4)2024起idx11-16欄位順序改變且格式文件未更新、會產生看似合理的錯誤席次。格式文件 選舉資料庫格式.odt 停在民國101年。每次新增屆別必須重跑自我驗證。★【三個口徑要點，原記於 processed JSON 的 meta.caveats，2026-08-10 改用溯源外層後移此處保存】(1) CEC 的『區域立委人口數』【不含原住民】，與山原/平原人口互斥，全國人口＝三者相加。已與內政部戶政司年底人口交叉驗證，2012 年差異為 0，其餘各屆差 4 千至 3 萬（選舉在 1 月、戶政司基準為前一年 12/31 的時間差）。直接拿區域人口當分母會把原住民人口占比高估約 0.05-0.07 個百分點——本專案初版即犯此錯，2024 年占比由 2.58% 修正為 2.51%。(2) 席次占比的分母固定為 113（第 7 屆起立法院總席次，憲法增修條文第 4 條），非各屆實際當選人數。(3) 2024 年起欄位順序改變，scripts/extract-cec-elprof.ps1 以『男+女=合計』自我驗證偵測版面，兩種版面皆不通過即中止而【不套用預設版面】——依格式文件解讀 2024 資料會得到『山原 5 席、平原 2 席』這種看似合理但完全錯誤的結果且不會報錯。偵測結果寫入輸出的『版面』欄位，保留至前端作為可稽核性的一部分。 【2026-08-11 授權查證】原記『待確認（開放資料專區未於下載頁明示授權條款）』：下載頁確實未標示，但中選會「網站資料開放宣言」(https://web.cec.gov.tw/central/article/21322) 對『網站上刊載之所有資料與素材』宣告政府資料開放授權條款第1版，明文為無償、非專屬、得再授權，允許不限時間地域之重製、改作、編輯、公開傳輸，且『此一授權行為不會嗣後撤回』，無須取得書面授權，僅須註明出處。故改記 reusable=true。⚠️ 該宣言第二點的三項排除須留意：(1) 範圍僅及於著作權，不及於專利、商標、機關標誌；(2) 個人資料能否蒐集處理利用，使用者須自行依個人資料保護法辦理——本壓縮檔的 elcand.csv 含候選人姓名、出生日期、出生地、學歷，屬個人資料，若日後要用該檔做分析，此條直接適用，不因開放授權而免除；(3) 經機關特別聲明須經同意的影音圖像等不在範圍內。另第四點要求不得惡意變更致展示資訊與原資料不符。",
-      "licenseUrl": "https://web.cec.gov.tw/central/article/21322"
+      "licenseUrl": "https://web.cec.gov.tw/central/article/21322",
+      "sha256": {
+        "cec-votedata.zip": "84740535b1f4a9a8fec8ebfe8f7577889837b7639cd7f5e40ef8826c6ab2f69a"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "moi-year-end-population",
@@ -151,7 +157,11 @@
       "nature": "official-statistic",
       "notes": "用途為驗證 CEC 人口口徑。結構為三列一組（計/男/女），西元年標在「男」列、總計在「計」列第4欄，解析時需取 year 列的前一列。頁面無 <a href>，curl 直取不到，自動化更新有障礙。【2026-08-09 更正】先前記載『戶政司資料須人工取得、方法B不可行』僅適用於本筆（ris.gov.tw 網頁快速下載頁）。戶政司的 opendata API 可自動化——見 moi-odrp013-11506。當時判定失敗的原因是 API 路徑參數用錯（{yyy} 應為 {yyymm}），非資料不存在。教訓：API 回『查無資料』不等於資料不存在，先確認參數格式再下結論。 【2026-08-10 授權查證】原記『待確認（快速下載頁未於檔案旁明示）』：下載頁確實未於檔案旁標示，但戶政司「政府網站資料開放宣告」(https://www.ris.gov.tw/app/portal/133) 對全站資料宣告政府資料開放授權條款第1版，明文允許重製、改作、編輯、公開傳輸與再授權，不需另取書面授權，僅需標示來源，涵蓋本檔。故改記 reusable=true。",
       "licenseUrl": "https://www.ris.gov.tw/app/portal/133",
-      "verification": "primary-source"
+      "verification": "primary-source",
+      "sha256": {
+        "moi-year-end-population-by-sex-age.xls": "9aa8a978ff57d74917eb63cedb8e8e6f720c7c68c5ea8ca57735006b46219e7c"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "siraya-baseline-20260809",
@@ -166,7 +176,11 @@
       "verification": "secondary-source",
       "notes": "【2026-08-09 更正】原標 official-statistic 為誤：本檔 agency 為『本專案彙整』且檔內含『5萬人推估』(academic-estimate)，單值 nature 標籤蓋不住混合來源，違反 CLAUDE.md 第1條。改標 compilation，檔內須逐項標註。檔中官方事實部分（登記開放前戶籍人口為零）為 official-statistic；『5萬人』出自原民會主秘王美蘋 Akiku．Haisum 轉述專家學者評估（中央社 2026-07-30），為 academic-estimate。記錄的『戶籍人口為零』狀態於 2026-08 中失效且無法回溯重建。 【2026-08-10 補記】部署前授權盤點時發現本筆缺 license 與 reusable 欄位。本檔為本專案自行撰寫之彙整，非下載所得，故專案自身得再散布；檔內引述之新聞與談話其權利仍屬原始來源，引用時已標註出處。",
       "license": "本專案自行彙整；檔內引述之第三方內容，其權利屬各原始來源",
-      "reusable": "true"
+      "reusable": "true",
+      "sha256": {
+        "siraya-baseline-2026-08-09.md": "60852e3cea68c6cb652ebb99dea9bb7bc04679e0b1fff1b09bbafe1d5d4d9379"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "constitution-amendment-art4",
@@ -228,7 +242,16 @@
       "nature": "official-statistic",
       "verification": "primary-source",
       "notes": "6個檔案：縣市/鄉鎮 × (族別|年齡) × 性別，另有原住民族地區人口與都市非都市比。總人口 637,620（男308,451+女329,169 自我驗證通過）。⚠️ 不含西拉雅族，本期仍為16族結構——這是第17族出現前的最後一期乾淨快照。⚠️ 族別與年齡是兩組獨立二維交叉，無三維交叉，見 gap-tribe-by-age-crosstab。⚠️ 與 cec-votedata 的原住民人口(2024年588,660)口徑與時點皆不同，不可畫在同一張圖。【2026-08-09 角色調整】本筆已由主來源降為【交叉驗證來源】，主來源改為戶政司 ODRP018/ODRP013——後者在地理層級（村里 vs 鄉鎮）、族別數（26 vs 16）、平埔欄位、可自動化、歷史涵蓋、授權明確度各方面均優。本筆不移除：獨立機關的交叉驗證有價值，且 XLS 快照已入庫。【歷史期數結案】不可批次下載：頁面 49 頁分頁、各期連結為 16 位隨機英數 ID（如 C782A9E0C4FE437E4089F2DA81972A1C），無規律不可由期數推導，只能逐頁翻逐期點。此限制已不影響專案，因追蹤改用 ODRP API。 【2026-08-10 授權查證】已查得實際條款（見 license 與 licenseUrl）：主站 www.cip.gov.tw 與開放資料平臺 data.cip.gov.tw 適用不同規範，本檔屬前者，不適用「原住民族委員會開放資料使用規範1.0版」。該宣告允許「在合理範圍內」重製與公開傳輸，但「合理範圍」未定義，是否涵蓋在公開版本庫中逐字再散布完整檔案，無法從條款本身確定，故 reusable 維持 unknown（依 CLAUDE.md 資料紀律第4條，不憑推論填為 true）。註：本檔為統計數表，是否具著作權法所稱原創性亦有疑問——若不構成著作，依該宣告「不得為著作權之標的者，任何人均得自由利用」。此為法律判斷，不在本專案自行認定之列。 【2026-08-10 再散布決定】本專案決定將本批檔案納入公開版本庫，依據為該宣告允許「在合理範圍內重製、公開播送或公開傳輸並註明出處」，出處已完整記於本筆。reusable 仍維持 unknown——這是本專案的判斷，不是原民會的授權宣告，兩者不可混為一談。若原民會表示不同意，處置方式為自版本庫移除（需重寫 git 歷史）。 【2026-08-11 結論】reusable 由 unknown 改為 true。依據有二，且互相獨立：(1) 該宣告第一點第(四)款明文列為合理使用情形：「本會網站上所刊載以本會名義公開發表之著作，在合理範圍內，得重製、公開播送或公開傳輸；利用時，並請註明出處」——本專案的使用正是逐字再散布、未改動、且出處完整記於本檔，落在該款允許的範圍內。(2) 著作權法第7條的編輯著作要件為「就資料之選擇及編排具有創作性」，行政統計表的編排由行政區與族別分類決定而非創作選擇，底層數字則為事實；若不構成著作，依該宣告第一點第(二)款「不得為著作權之標的者，任何人均得自由利用」。⚠️ 注意：第9條第1項第3款雖列有「數表、表格」，但受「通用之」修飾，指的是空白表格、通用公式一類的形式性標的，不宜直接援引為本檔不受保護的依據——站得住的是第7條的創作性要件，不是第9條。⚠️ 此結論適用於「逐字、未改動、註明出處」的再散布。改作、重新編排或去除出處者不在上述兩項依據的射程內，須自行評估。license 欄仍記為非開放授權——宣告的性質沒有改變，改變的是本專案對「這樣的使用是否被允許」的判斷。",
-      "licenseUrl": "https://www.cip.gov.tw/zh-tw/footer/E545056B78F702E38058FB779C868130/info.html"
+      "licenseUrl": "https://www.cip.gov.tw/zh-tw/footer/E545056B78F702E38058FB779C868130/info.html",
+      "sha256": {
+        "cip-11506-county-by-sex-age.xls": "faf757a88566e38257f915a1340079ef15c6881a7c3949e06e01896bfa2ba355",
+        "cip-11506-county-by-sex-tribe.xls": "f921cf8a63669adb8688a5d13b8c92fceb295dd0ae5750a0f45a1ac01fc99d44",
+        "cip-11506-indigenous-area-population.xls": "2bfbec88fbf871e7ad92689d6ef68940c68ed0278439413a23de7fef23000789",
+        "cip-11506-township-by-sex-age.xls": "05c668cbd27d8baa9ee65e753455bb64704893e579972edbdb550d916a501cc3",
+        "cip-11506-township-by-sex-tribe.xls": "8058424a3464074bddbd6c62aa3d77410e406a9332a345ed28ee68486860a3c6",
+        "cip-11506-township-urban-ratio.xls": "c4222390c78bbaa5acd855543838050638127cd2992226efef19ccd8ab1aad5a"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "moi-odrp013-11506",
@@ -245,7 +268,11 @@
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "★ MVP 現況數字的主來源。村里層級 7,771 列，分頁 page=1..4（每頁 2000）。2026-06 全國總人口 23,243,565、原住民合計 637,620（山地 339,682 / 平地 297,938 / 平埔 0）、非原住民 22,605,945、原住民占比 2.7432%。★ 分子與分母在同一份資料、同一口徑、同一基準日，免除跨機關口徑風險。三重自我驗證通過：男11,427,972+女11,815,593=總計；原+非原=總計；且 637,620 與原民會月報 cip-monthly-population-11506 完全相同（男308,451/女329,169 亦逐一相符）——跨機關獨立交叉驗證。⚠️ 路徑參數為 {yyymm}（民國年+月）不是 {yyy}；用 115 會回『查無資料』，須用 11506。⚠️ 2.7432%（戶籍現住人口2026-06）與 cec-votedata 的 2.51%（選舉區人口2024-01）口徑與時點皆不同，不可畫在同一條趨勢線上，否則會捏造出不存在的躍升。★★ indigenous_pingpu_total_m/_f 欄位已存在於官方 schema 但值為 0——見 gap-pingpu-household-population。轉檔腳本必須內建上述三重自我驗證，理由同中選會：不能信任官方格式文件。"
+      "notes": "★ MVP 現況數字的主來源。村里層級 7,771 列，分頁 page=1..4（每頁 2000）。2026-06 全國總人口 23,243,565、原住民合計 637,620（山地 339,682 / 平地 297,938 / 平埔 0）、非原住民 22,605,945、原住民占比 2.7432%。★ 分子與分母在同一份資料、同一口徑、同一基準日，免除跨機關口徑風險。三重自我驗證通過：男11,427,972+女11,815,593=總計；原+非原=總計；且 637,620 與原民會月報 cip-monthly-population-11506 完全相同（男308,451/女329,169 亦逐一相符）——跨機關獨立交叉驗證。⚠️ 路徑參數為 {yyymm}（民國年+月）不是 {yyy}；用 115 會回『查無資料』，須用 11506。⚠️ 2.7432%（戶籍現住人口2026-06）與 cec-votedata 的 2.51%（選舉區人口2024-01）口徑與時點皆不同，不可畫在同一條趨勢線上，否則會捏造出不存在的躍升。★★ indigenous_pingpu_total_m/_f 欄位已存在於官方 schema 但值為 0——見 gap-pingpu-household-population。轉檔腳本必須內建上述三重自我驗證，理由同中選會：不能信任官方格式文件。",
+      "sha256": {
+        "moi-odrp013-population-by-indigenous-status-11506.json": "4da69397b9c481f5432206f3af47fa5b6702a874cedae46903e6e5c794f25962"
+      },
+      "sha256Kind": "normalised-data"
     },
     {
       "id": "moi-odrp018-11506",
@@ -262,7 +289,11 @@
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "★ 族別資料的主來源，各維度均優於原民會月報：村里層級7,771列（月報僅到鄉鎮）、26個族別欄位（月報16族）、API可自動化（月報連結為16位隨機ID不可推導）、涵蓋2018-01起逐月、授權明確。★★ 官方 schema 已列出全部10個平埔族群欄位：siraya西拉雅/ketagalan凱達格蘭/taokas道卡斯/pazeh巴宰/papora拍瀑拉/babuza巴布薩/hoanya洪雅/kaxabu噶哈巫/taivoan大武壠/makatau馬卡道，2026-06 值皆為0。⚠️ 洪雅族有欄位但不在9族申請名單中，原因待確認——官方對『平埔族群包含哪些族』的定義與申請名單不一致，席次模擬器讓使用者選『哪些族納入』時須處理此差異。⚠️ 另有 indigenous_undeclared 未申報族別 7,768 人，畫族別圓餅圖時不可省略否則加總不等於總數；原民會月報是否有對應欄位待確認。三方驗證通過：16族合計637,620 = indigenous_total = 原民會月報總數，六個主要族別逐一相符。⚠️ 與 ODRP015（年齡）仍是兩組獨立二維表，無年齡×族別交叉，見 gap-tribe-by-age-crosstab。★★★【格式陷阱：pingpu_* 重複計算】本 endpoint 有兩組平行的族別結構，混加會重複計算：(A) 主清單 27 個 stem＝16 現行族(amis/atayal/paiwan/bunun/rukai/pinuyumayan/cou/saisiyat/yami/thao/kavalan/truku/sakizaya/sediq/hlaalua/kanakanavu) + 10 平埔族群 + undeclared，其 m+f 加總＝indigenous_total；(B) pingpu_total 加 11 個 pingpu_<族>（含 pingpu_kavalan、pingpu_undeclared），是【依平埔身分別的交叉表，不是額外的人】。⚠️ 2026-06 時平埔全為 0，故兩組怎麼加都得到 637,620，陷阱看不出來；平埔身分登記自 2026-08 中開始後才會浮現。轉檔一律只用主清單(A)，並以『族別加總＝indigenous_total』的自我驗證守住——scripts/build-population.ps1 已實作，驗證失敗即中止不產檔。任何要重寫此段解析的人都會再踩一次，故記錄於此而非僅程式註解。"
+      "notes": "★ 族別資料的主來源，各維度均優於原民會月報：村里層級7,771列（月報僅到鄉鎮）、26個族別欄位（月報16族）、API可自動化（月報連結為16位隨機ID不可推導）、涵蓋2018-01起逐月、授權明確。★★ 官方 schema 已列出全部10個平埔族群欄位：siraya西拉雅/ketagalan凱達格蘭/taokas道卡斯/pazeh巴宰/papora拍瀑拉/babuza巴布薩/hoanya洪雅/kaxabu噶哈巫/taivoan大武壠/makatau馬卡道，2026-06 值皆為0。⚠️ 洪雅族有欄位但不在9族申請名單中，原因待確認——官方對『平埔族群包含哪些族』的定義與申請名單不一致，席次模擬器讓使用者選『哪些族納入』時須處理此差異。⚠️ 另有 indigenous_undeclared 未申報族別 7,768 人，畫族別圓餅圖時不可省略否則加總不等於總數；原民會月報是否有對應欄位待確認。三方驗證通過：16族合計637,620 = indigenous_total = 原民會月報總數，六個主要族別逐一相符。⚠️ 與 ODRP015（年齡）仍是兩組獨立二維表，無年齡×族別交叉，見 gap-tribe-by-age-crosstab。★★★【格式陷阱：pingpu_* 重複計算】本 endpoint 有兩組平行的族別結構，混加會重複計算：(A) 主清單 27 個 stem＝16 現行族(amis/atayal/paiwan/bunun/rukai/pinuyumayan/cou/saisiyat/yami/thao/kavalan/truku/sakizaya/sediq/hlaalua/kanakanavu) + 10 平埔族群 + undeclared，其 m+f 加總＝indigenous_total；(B) pingpu_total 加 11 個 pingpu_<族>（含 pingpu_kavalan、pingpu_undeclared），是【依平埔身分別的交叉表，不是額外的人】。⚠️ 2026-06 時平埔全為 0，故兩組怎麼加都得到 637,620，陷阱看不出來；平埔身分登記自 2026-08 中開始後才會浮現。轉檔一律只用主清單(A)，並以『族別加總＝indigenous_total』的自我驗證守住——scripts/build-population.ps1 已實作，驗證失敗即中止不產檔。任何要重寫此段解析的人都會再踩一次，故記錄於此而非僅程式註解。",
+      "sha256": {
+        "moi-odrp018-population-by-tribe-11506.json": "ee2691b3bec278b8bd8a5921d5fe09461e9cbbcb2fc6ac9cca02a8b0dbf80a8f"
+      },
+      "sha256Kind": "normalised-data"
     },
     {
       "id": "cip-reserved-land-owner",
@@ -280,7 +311,11 @@
       "nature": "official-statistic",
       "verification": "primary-source",
       "notes": "民國113年：所有權部總計 265,766.858 公頃 / 596,023筆；私有 136,809.112；國有 128,762.884。⚠️ 口徑陷阱：(1)『26萬vs24萬公頃』的差異【並非】總面積與國有部分之別——國有僅12.9萬公頃，第一輪的推測已被本資料推翻，24萬的出處仍不明【待核實】；(2)筆數口徑與 A53000000A-108090 不同：所有權部596,023筆 vs 土地463,166筆，一筆土地可有多個所有權部，兩者不可互相取代；(3)民國107年缺『所有權部總計』列，須自行相加(147,498.430+117,291.994=264,790.424)並標為本專案計算值；(4)僅13個縣市有保留地，地圖空白縣市是『無保留地』非『資料缺漏』。趨勢：總面積幾乎不變但四年間約6,400公頃由國有轉私有，民國112年私有首度超過國有（黃金交叉）。★【格式陷阱：同一列內混用小數位數】來源在同一列中混用 2 位與 3 位小數，故組成加總不會恰好等於官方小計。例：113年臺中市 國有 5040.02（2位）+ 鄉有 5.289（3位）= 5045.309，但公有欄寫 5045.31。民國113年有 44 個值只到 2 位、39 個到 3 位，其餘年度以 3 位為主，故驗證失敗會集中在 113 年。scripts/build-land.ps1 採容差 0.05 公頃（≈4 個 2 位數值累積的四捨五入上限）而非要求相等；真正的資料錯誤會差好幾個數量級仍會被抓到。★ 民國107年除缺「所有權部總計」外，「其他單位」亦為空值，故該年推算總計（公有+私有=264,790.424）可能少計約 0-100 公頃（其他年度的其他單位介於 37-103 公頃）。輸出以 total_official 與 total_derived 兩欄分開表示，因 _fieldNature 是每欄一個值，無法表達同一欄在不同列有不同性質。 【2026-08-10 授權查證】本檔取自原民會開放資料平臺 data.cip.gov.tw，該平臺適用「原住民族委員會開放資料使用規範1.0版」(https://data.cip.gov.tw/Home/Copyright.aspx)：允許自由利用（含商業與營利目的）、允許與其他資料結合或納入自身產品，須依提供者指定方式標示出處。⚠️ 這與 data.gov.tw 的「政府資料開放授權條款第1版」是不同的授權文件，不可互相代稱。 【2026-08-10 更正】url 原填 https://data.gov.tw/dataset/112682，但該資料集頁（原住民保留地筆數及面積）僅列 A53000000A-108090 的 JSON/XML/CSV 三個資源，不含本檔的 A53000000A-113003。本檔實際下載自 data.cip.gov.tw 的 dump API，data.gov.tw 上對應的資料集頁【待確認】。",
-      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx"
+      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx",
+      "sha256": {
+        "cip-reserved-land-owner-A53000000A-113003.csv": "152a2dfbc19dcef89a8a734ecf9f8f7929e847305f5bc834fe8620172d5308fa"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "cip-reserved-land-count-area",
@@ -299,7 +334,11 @@
       "nature": "official-statistic",
       "verification": "primary-source",
       "notes": "民國112年：463,166筆 / 266,475.190公頃（13縣市）。民國108年441,860筆 = 第一輪引述的『43萬餘筆』來源。⚠️ 筆數口徑與 A53000000A-113003 不同，見該筆 notes。⚠️ 第一輪記載『年更新』有誤，實際為不定期更新。原民會窗口：邱冠儒 02-89953065 krc@apc.gov.tw 【2026-08-10 授權查證】本檔取自原民會開放資料平臺 data.cip.gov.tw，該平臺適用「原住民族委員會開放資料使用規範1.0版」(https://data.cip.gov.tw/Home/Copyright.aspx)：允許自由利用（含商業與營利目的）、允許與其他資料結合或納入自身產品，須依提供者指定方式標示出處。⚠️ 這與 data.gov.tw 的「政府資料開放授權條款第1版」是不同的授權文件，不可互相代稱。",
-      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx"
+      "licenseUrl": "https://data.cip.gov.tw/Home/Copyright.aspx",
+      "sha256": {
+        "cip-reserved-land-count-area-A53000000A-108090.csv": "9f3b1924a82ab805a02c4266ffa21a7c4cb9bca5f089e2089feaa7e7e1d952ec"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "moi-county-boundary",
@@ -316,7 +355,11 @@
       "api": false,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "★ COUNTYCODE 與戶政司 district_code 前 5 碼格式完全一致，22 個縣市代碼與名稱全數對應、無孤兒鍵（已實測）。⚠️ 原始 SHP 精度極高：22 個多邊形共 332,091 個座標點、5.3MB，對瀏覽器不可用，必須簡化。scripts/build-geo.py 以 Douglas-Peucker 容差 0.002 度簡化至 4,746 點 / 99KB（簡化率 98.6%）。★★【幾何陷阱：多邊形有孔洞】新北市包住臺北市、嘉義縣包住嘉義市，SHP 以逆時針內環表示。若把內環當獨立多邊形處理，新北市的填色會蓋住臺北市——是看得見的錯誤。build-geo.py 依 signed area 判斷環的方向並將孔洞歸給所屬外環，並以點在多邊形內測試驗證臺北市中心落在孔洞內。⚠️ zip 依 .gitignore 規則不入庫（可重新下載），但下載網址含 GUID 可能輪替；產出的 GeoJSON 已入庫，故即使無法重新下載原始檔，網站仍可運作。"
+      "notes": "★ COUNTYCODE 與戶政司 district_code 前 5 碼格式完全一致，22 個縣市代碼與名稱全數對應、無孤兒鍵（已實測）。⚠️ 原始 SHP 精度極高：22 個多邊形共 332,091 個座標點、5.3MB，對瀏覽器不可用，必須簡化。scripts/build-geo.py 以 Douglas-Peucker 容差 0.002 度簡化至 4,746 點 / 99KB（簡化率 98.6%）。★★【幾何陷阱：多邊形有孔洞】新北市包住臺北市、嘉義縣包住嘉義市，SHP 以逆時針內環表示。若把內環當獨立多邊形處理，新北市的填色會蓋住臺北市——是看得見的錯誤。build-geo.py 依 signed area 判斷環的方向並將孔洞歸給所屬外環，並以點在多邊形內測試驗證臺北市中心落在孔洞內。⚠️ zip 依 .gitignore 規則不入庫（可重新下載），但下載網址含 GUID 可能輪替；產出的 GeoJSON 已入庫，故即使無法重新下載原始檔，網站仍可運作。",
+      "sha256": {
+        "moi-county-boundary-1140318.zip": "9ff4d337e03a711d7e17caaf4d0c46a0fe2c6bd3660b321a2e35123030d8491c"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "moi-township-boundary",
@@ -333,7 +376,11 @@
       "api": false,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "★ TOWNCODE 為 8 碼，與戶政司 district_code 前 8 碼一致；368 個鄉鎮全數對應 population-by-township.json、無孤兒鍵（已實測，並抽驗花蓮/臺東/屏東三縣）。⚠️ 原始 1,148,670 點、18.4MB SHP。scripts/build-geo.py 以容差 0.0005 度簡化並【依縣市切分為 22 個檔案】，供下鑽時個別載入（總計約 1MB，單檔 4-90KB）——一次載入全部鄉鎮對儀表板過重。⚠️ zip 內另有 Town_Majia_Sanhe（瑪家鄉三和村特例圖層），讀取時前綴須精確到 TOWN_MOI 否則可能取錯檔。孔洞處理同 moi-county-boundary。zip 不入庫，理由同上。"
+      "notes": "★ TOWNCODE 為 8 碼，與戶政司 district_code 前 8 碼一致；368 個鄉鎮全數對應 population-by-township.json、無孤兒鍵（已實測，並抽驗花蓮/臺東/屏東三縣）。⚠️ 原始 1,148,670 點、18.4MB SHP。scripts/build-geo.py 以容差 0.0005 度簡化並【依縣市切分為 22 個檔案】，供下鑽時個別載入（總計約 1MB，單檔 4-90KB）——一次載入全部鄉鎮對儀表板過重。⚠️ zip 內另有 Town_Majia_Sanhe（瑪家鄉三和村特例圖層），讀取時前綴須精確到 TOWN_MOI 否則可能取錯檔。孔洞處理同 moi-county-boundary。zip 不入庫，理由同上。",
+      "sha256": {
+        "moi-township-boundary-1140318.zip": "c5dc6c0f9a8cc1aad6758a0a6fb81b203718b37f42c5aa8e684262ca24a7d9dd"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "capas-tipd",
@@ -384,7 +431,11 @@
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。⚠️ 資料期別與欄位口徑【待確認】——本檔目前未被任何 processed JSON 使用，若日後要用，需先確認其與 A53000000A-113003（所有權別）的面積口徑是否一致。"
+      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。⚠️ 資料期別與欄位口徑【待確認】——本檔目前未被任何 processed JSON 使用，若日後要用，需先確認其與 A53000000A-113003（所有權別）的面積口徑是否一致。",
+      "sha256": {
+        "cip-reserved-land-total-A53000000A-111007.csv": "e5bc4272f033b68efc97d0d421a236b3470a238876455d77e63b98b0e2527553"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "cip-reserved-land-usage",
@@ -402,7 +453,11 @@
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。data.gov.tw 另有「全國原住民保留地使用情形」資料集 (https://data.gov.tw/dataset/130120，授權為政府資料開放授權條款第1版)，但該頁未列出 A53000000A 格式的資源識別碼，是否為同一份【待確認】。⚠️ 本檔目前未被任何 processed JSON 使用。"
+      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。data.gov.tw 另有「全國原住民保留地使用情形」資料集 (https://data.gov.tw/dataset/130120，授權為政府資料開放授權條款第1版)，但該頁未列出 A53000000A 格式的資源識別碼，是否為同一份【待確認】。⚠️ 本檔目前未被任何 processed JSON 使用。",
+      "sha256": {
+        "cip-reserved-land-usage-A53000000A-113002.csv": "58d4241acf10eb5ff53cc124c89efa2b9e73c841c7cd732d65f9b778525042ae"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "cip-reserved-land-building-agri",
@@ -420,7 +475,11 @@
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",
-      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。⚠️ 標題依檔名推得，資料集正式名稱與期別【待確認】。⚠️ 本檔目前未被任何 processed JSON 使用。"
+      "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。⚠️ 標題依檔名推得，資料集正式名稱與期別【待確認】。⚠️ 本檔目前未被任何 processed JSON 使用。",
+      "sha256": {
+        "cip-reserved-land-building-agri-A53000000A-112054.csv": "662b143442e9fce4093ee07641c65353c4dc664c5c48a28c4f7fdc4590eebcd1"
+      },
+      "sha256Kind": "file-bytes"
     },
     {
       "id": "moi-segis-indigenous-population-11412",

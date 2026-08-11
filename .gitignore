@@ -14,8 +14,18 @@ desktop.ini
 .vscode/
 .idea/
 
-# 大型原始檔：政府下載的 XLSX / Shapefile / GeoPackage
-# 原則是「原始檔可重新下載，就不入庫」，來源網址記在 data/sources.json
+# data/raw 的入庫判準
+#
+#   可重新取得者 → 不入庫。
+#   不可重新取得者 → 入庫，並在下面以例外標明，附上「為什麼這一份不適用」的理由。
+#
+# 判準是「能不能重新取得」，不是副檔名。下面的規則按副檔名寫只是實作手段——
+# 而那個手段曾經漏掉一整類檔案：ODRP018 的 40MB JSON 因為清單裡沒有 .json
+# 而被入庫，不是有人衡量後的決定。新增一種來源格式時，先問判準，再加規則。
+#
+# 不入庫的代價是可稽核性，那由 data/sources.json 的 sha256 欄位補上：
+# 任何人重新取得、比對雜湊、確認與本專案用的是同一份資料，再重跑轉檔腳本。
+# ODRP 兩份可用 scripts/fetch-raw.py 取回（該 API 分頁，必須逐頁合併）。
 data/raw/**/*.xlsx
 data/raw/**/*.xls
 data/raw/**/*.zip
@@ -24,6 +34,7 @@ data/raw/**/*.dbf
 data/raw/**/*.shx
 data/raw/**/*.prj
 data/raw/**/*.gpkg
+data/raw/**/*.json
 
 # 例外：無法重新下載者仍須入庫，否則驗算結果無從稽核。
 # 戶政司這份的下載連結由 JS 產生，頁面上沒有 <a href>，curl 直取不到，
