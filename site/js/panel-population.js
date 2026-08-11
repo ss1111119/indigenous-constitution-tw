@@ -9,7 +9,7 @@
  * 這對應 data-provenance 的要求：0 是有意義的官方事實，不是空白也不是 N/A。
  */
 
-import { createPanel, fmt } from './panel.js';
+import { createPanel, fmt, chartTable } from './panel.js';
 import { traceable } from './provenance.js';
 
 const RECOGNISED = [
@@ -81,6 +81,13 @@ function render(container, [dataset], region) {
   /* 每根長條含間距約 26px，加上上下留白。橫向長條圖的高度隨類別數變動。 */
   canvasWrap.style.height = `${bars.length * 26 + 40}px`;
   const canvas = document.createElement('canvas');
+  /* canvas 對輔助技術不透明，須自帶名稱。這個 aria-label 不能被下方的表格取代——
+     收合的 details 不在無障礙樹中。 */
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label',
+    `橫向長條圖：${region.name}原住民族各族人口數，`
+    + `共 ${bars.length} 個族別，由多到少排列，`
+    + `最多為${bars[0].name} ${fmt(bars[0].value)} 人。完整數值見下方表格。`);
   canvasWrap.append(canvas);
   container.append(canvasWrap);
 
@@ -89,21 +96,24 @@ function render(container, [dataset], region) {
   const inkMuted = dark ? '#a9a397' : '#5d574e';
   const gridLine = dark ? '#3b382e' : '#e6e2da';
 
+  /* 傳給 Chart.js 與傳給表格的是同一個物件——兩者的數值不可能分歧。 */
+  const chartData = {
+    labels: bars.map((d) => d.name),
+    datasets: [{
+      data: bars.map((d) => d.value),
+      backgroundColor: dark ? BAR_COLOR_DARK : BAR_COLOR_LIGHT,
+      /* 資料端 4px 圓角、基線端維持方角 */
+      borderRadius: { topLeft: 0, bottomLeft: 0, topRight: 4, bottomRight: 4 },
+      borderSkipped: false,
+      /* 長條不填滿整個帶寬，留下的空氣即是相鄰長條間的間隔 */
+      barPercentage: 0.72,
+      maxBarThickness: 24,
+    }],
+  };
+
   new window.Chart(canvas, {
     type: 'bar',
-    data: {
-      labels: bars.map((d) => d.name),
-      datasets: [{
-        data: bars.map((d) => d.value),
-        backgroundColor: dark ? BAR_COLOR_DARK : BAR_COLOR_LIGHT,
-        /* 資料端 4px 圓角、基線端維持方角 */
-        borderRadius: { topLeft: 0, bottomLeft: 0, topRight: 4, bottomRight: 4 },
-        borderSkipped: false,
-        /* 長條不填滿整個帶寬，留下的空氣即是相鄰長條間的間隔 */
-        barPercentage: 0.72,
-        maxBarThickness: 24,
-      }],
-    },
+    data: chartData,
     options: {
       indexAxis: 'y',
       responsive: true,
@@ -131,6 +141,10 @@ function render(container, [dataset], region) {
       },
     },
   });
+
+  container.append(chartTable(
+    chartData, `${region.name}原住民族各族人口`, '族別', (v) => `${fmt(v)} 人`,
+  ));
 
   /* --- 平埔族群：狀態而非量值 --- */
   const pingpuTotal = PINGPU.reduce((sum, [key]) => sum + row[key], 0);

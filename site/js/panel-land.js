@@ -11,7 +11,7 @@
  *      因為畫一條零線會讓人以為量到了 0 公頃。
  */
 
-import { createPanel, fmt } from './panel.js';
+import { createPanel, fmt, chartTable } from './panel.js';
 import { traceable } from './provenance.js';
 
 /* 來源只有這五年。x 軸仍完整列出 107-113，缺的年度以 null 呈現為斷線。 */
@@ -87,6 +87,14 @@ function render(container, [national, byCounty], region) {
   wrap.append(canvas);
   container.append(wrap);
 
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label',
+    `折線圖：原住民保留地面積按所有權別，民國 ${YEARS[0]} 至 ${YEARS[YEARS.length - 1]} 年。`
+    + (YEARS.some((y) => !byYear.has(y))
+      ? `民國 ${YEARS.filter((y) => !byYear.has(y)).join('、')} 年無資料，圖上為斷線而非零。`
+      : '')
+    + '完整數值見下方表格。');
+
   const datasets = [
     {
       label: '所有權部總計',
@@ -115,9 +123,13 @@ function render(container, [national, byCounty], region) {
     })),
   ];
 
+  /* 同一個物件同時給 Chart.js 與表格。缺口在 data 中就是 null，
+     圖上因此斷線、表上因此顯示無資料標記——兩者出自同一個 null。 */
+  const chartData = { labels: YEARS.map((y) => `民國${y}年`), datasets };
+
   new window.Chart(canvas, {
     type: 'line',
-    data: { labels: YEARS.map((y) => `民國${y}年`), datasets },
+    data: chartData,
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -151,6 +163,11 @@ function render(container, [national, byCounty], region) {
       },
     },
   });
+
+  container.append(chartTable(
+    chartData, '原住民保留地面積按所有權別', '年度',
+    (v) => `${v.toLocaleString('zh-TW', { maximumFractionDigits: 3 })} 公頃`,
+  ));
 
   /* --- 說明 --- */
   const missing = YEARS.filter((y) => !byYear.has(y));

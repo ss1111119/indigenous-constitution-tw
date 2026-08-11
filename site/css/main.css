@@ -778,6 +778,65 @@ fieldset.sim-control { margin: 0; }
   border-radius: 0;
 }
 
+/* 圖表的表格檢視。沿用本站漸進揭露的視覺語言（見 .sim-assumptions、.sim-why）。
+   收合是為了不讓四張表撐長頁面——不是為了藏起來，summary 明寫「以表格檢視」。
+
+   ⚠️ 收合的 details 內容不在無障礙樹中，所以這張表【不是】唯一的文字替代：
+   各 canvas 另有 role="img" 與 aria-label，見各 panel-*.js。 */
+.chart-table {
+  margin: 0.75rem 0 1.5rem;
+  padding: 0.7rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9375rem;
+}
+
+.chart-table summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* 表格過寬時在自身容器內橫向滾動，頁面本體不得橫向滾動。 */
+.chart-table-scroll {
+  margin-top: 0.9rem;
+  overflow-x: auto;
+}
+
+.chart-table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.chart-table th,
+.chart-table td {
+  padding: 0.35rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.chart-table thead th {
+  color: var(--text);
+  font-weight: 600;
+  border-bottom-width: 2px;
+}
+
+/* 第一欄是列標題（族別、年度），靠左才讀得順。 */
+.chart-table th[scope="row"],
+.chart-table thead th:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.chart-table td { color: var(--text); }
+
+/* 無資料與 0 不只文字不同，視覺上也要能區辨——0 是事實，無資料不是。 */
+.chart-table td[data-nodata] {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 /* 固定假設第 2 條的量化對照。縮排並加左標線，表示它從屬於該條假設，
    而不是與其他兩條假設並列的第四項。 */
 .sim-contrast {

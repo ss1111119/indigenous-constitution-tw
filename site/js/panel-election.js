@@ -11,7 +11,7 @@
  * 在資料層就不是行政區，無法依縣市切分。
  */
 
-import { createPanel, fmt } from './panel.js';
+import { createPanel, fmt, chartTable } from './panel.js';
 import { traceable } from './provenance.js';
 
 const SERIES = [
@@ -94,24 +94,32 @@ function renderTurnout(container, rows) {
   wrap.className = 'canvas-wrap';
   wrap.style.height = '20rem';
   const canvas = document.createElement('canvas');
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label',
+    `折線圖：${years[0]} 至 ${years[years.length - 1]} 年立委選舉投票率，`
+    + `共 ${years.length} 屆，分${SERIES.map((s) => s.label).join('、')}三類。`
+    + '完整數值見下方表格。');
   wrap.append(canvas);
   container.append(wrap);
 
+  /* 同一個物件同時給 Chart.js 與表格，數值不可能分歧。 */
+  const chartData = {
+    labels: years,
+    datasets: SERIES.map((s) => ({
+      label: s.label,
+      data: years.map((y) => rows.find((r) => String(r.年) === y && r.類別 === s.key)?.投票率 ?? null),
+      borderColor: t.dark ? s.dark : s.light,
+      backgroundColor: t.dark ? s.dark : s.light,
+      borderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      tension: 0,
+    })),
+  };
+
   new window.Chart(canvas, {
     type: 'line',
-    data: {
-      labels: years,
-      datasets: SERIES.map((s) => ({
-        label: s.label,
-        data: years.map((y) => rows.find((r) => String(r.年) === y && r.類別 === s.key)?.投票率 ?? null),
-        borderColor: t.dark ? s.dark : s.light,
-        backgroundColor: t.dark ? s.dark : s.light,
-        borderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        tension: 0,
-      })),
-    },
+    data: chartData,
     options: {
       ...baseOptions(t, '投票率（%）'),
       plugins: {
@@ -122,6 +130,10 @@ function renderTurnout(container, rows) {
     },
     plugins: [endLabels],
   });
+
+  container.append(chartTable(
+    chartData, '歷屆立委選舉投票率', '年度', (v) => `${v}%`,
+  ));
 }
 
 function renderRatio(container, metrics, meta) {
@@ -140,21 +152,30 @@ function renderRatio(container, metrics, meta) {
   container.append(wrap);
 
   const years = metrics.map((m) => String(m.年));
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label',
+    `折線圖：每席區域立委選民數除以每席原住民立委選民數的倍數差距，`
+    + `${years[0]} 至 ${years[years.length - 1]} 年共 ${years.length} 屆，`
+    + `由 ${metrics[0].倍數差距} 倍變為 ${metrics[metrics.length - 1].倍數差距} 倍。`
+    + '完整數值見下方表格。');
+
+  const chartData = {
+    labels: years,
+    datasets: [{
+      label: '倍數差距',
+      data: metrics.map((m) => m.倍數差距),
+      borderColor: t.dark ? RATIO_COLOR_DARK : RATIO_COLOR_LIGHT,
+      backgroundColor: t.dark ? RATIO_COLOR_DARK : RATIO_COLOR_LIGHT,
+      borderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      tension: 0,
+    }],
+  };
+
   new window.Chart(canvas, {
     type: 'line',
-    data: {
-      labels: years,
-      datasets: [{
-        label: '倍數差距',
-        data: metrics.map((m) => m.倍數差距),
-        borderColor: t.dark ? RATIO_COLOR_DARK : RATIO_COLOR_LIGHT,
-        backgroundColor: t.dark ? RATIO_COLOR_DARK : RATIO_COLOR_LIGHT,
-        borderWidth: 2,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        tension: 0,
-      }],
-    },
+    data: chartData,
     options: {
       ...baseOptions(t, '倍數', { beginAtZero: false }),
       plugins: {
@@ -177,6 +198,10 @@ function renderRatio(container, metrics, meta) {
     },
     plugins: [endLabels],
   });
+
+  container.append(chartTable(
+    chartData, '每席區域立委選民數 ÷ 每席原住民立委選民數', '年度', (v) => `${v} 倍`,
+  ));
 
   /* 制度成因。這不是圖表的裝飾文字——沒有它，讀者會把收斂誤讀為
      「原住民代表性正在改善」，但實際上是超額代表的程度被人口成長稀釋。 */
