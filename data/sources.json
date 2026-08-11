@@ -421,6 +421,44 @@
       "nature": "official-statistic",
       "verification": "primary-source",
       "notes": "【2026-08-10 補記】本檔已入庫於 data/raw 但先前無來源記錄，違反 CLAUDE.md 資料紀律第3條，於部署前的授權盤點時發現並補上。授權依 data.cip.gov.tw 平臺規範（見 license 欄）。⚠️ 標題依檔名推得，資料集正式名稱與期別【待確認】。⚠️ 本檔目前未被任何 processed JSON 使用。"
+    },
+    {
+      "id": "moi-segis-indigenous-population-11412",
+      "title": "行政區原住民人口統計（縣市／鄉鎮市區／村里）SEGIS",
+      "agency": "內政部統計處（經社會經濟資料服務平台 SEGIS 供應）",
+      "url": "https://segis.moi.gov.tw/STATCloud/Index",
+      "downloadUrl": "https://segisws.moi.gov.tw/STATWSSTData/OpenService.asmx/GetAdminSTDataForOpenCode?oCode=88641597DE2A496B3B5AF84EB798086251A1FBEE829C41DBE0F35754759044301A86EBD1B43D7870D5421BC7960893AF",
+      "format": "JSON（另供 XML / GeoJSON(TWD97) / GeoJSON(WGS84) / CSV / SHP）",
+      "dataDate": "2025-12（民國114年12月，欄位值為 114Y12M）",
+      "downloadedAt": "尚未下載（2026-08-11 線上查證）",
+      "updatedAt": "115/01/20（平台標示之取得時間）",
+      "updateFrequency": "平台標示「不定期更新」，實質為年度（各年12月底）",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "primary-source",
+      "notes": "★【尚未取用】2026-08-11 評估通過但尚未進 data/raw 或 data/processed，完整查證見 docs/segis-check.md。★ 取用價值：本資料集有【平地原住民／山地原住民】分項（各含男/女/總）與非原住民人口數，戶政司 ODRP013 只到『原住民／非原住民』，無此維度。山地/平地正是憲法增修條文第4條兩個原住民立委選舉區（山地3席、平地3席）的法定分界，是選舉面板『兩個全國性選區的選民住在哪裡』與席次模擬器山地/平地基數的唯一官方來源。★★【格式陷阱一：O1/O2 不可依欄位順序判斷】metadata 頁面兩處敘述互相矛盾——『資料集摘要』的順序是 原住民→平地→山地→非原住民，『資料欄位清單』的顯示順序是 原住民→山地→平地→非原住民，兩者不可能同時正確，順序完全不能當判準。以族群結構反推判定：屏東縣（排灣、魯凱，法定山地）O2 占該縣原住民 91%、南投縣 93%、新竹縣 85%，而花蓮縣（阿美，法定平地）O1 占 60%、臺東縣 70% → 【O1 = 平地原住民、O2 = 山地原住民】，即『資料集摘要』正確、『資料欄位清單』的顯示順序會誤導。全國再驗：O2（山地）335,470 對照 排灣+泰雅+布農+太魯閣+魯凱+賽德克+鄒+賽夏 約33.1萬吻合。⚠️ 搞反不會報錯、總數也正確（O1+O2 恆等於 O_CNT），只會產出屏東變平地大縣、花蓮變山地大縣的對調地圖。轉檔腳本必須內建自我驗證：屏東縣山地原住民佔該縣原住民 ≥90%，失敗即中止。★★【格式陷阱二：村里級 TOWN_ID 欄位是壞的】村里級 7,751 列中 7,218 列（93%）V_ID 前綴對不上 TOWN_ID。查核結果：TOWN_ID 只有 22 個相異值（＝縣市數，每個縣市的所有村里被填上同一個鄉鎮代碼），V_ID 前綴有 368 個相異值（＝全臺鄉鎮市區數）且與鄉鎮名 1:1（前綴對應到多個 TOWN_ID 的情況為 0）。例：高雄市新興區各里 TOWN_ID 全為 64000190，V_ID 卻是 64000060-017。【TOWN_ID 不可使用，真正的鄉鎮代碼是 V_ID.split('-')[0]】，誤用會把整個縣市的村里全歸進同一個鄉鎮。TOWN 名稱欄位本身正確，錯的只有代碼欄位。★ 驗算（縣市級 22 列）：男304,386+女325,070=629,456=O_CNT ✅；平地293,986+山地335,470=629,456 ✅；平地男142,962+平地女151,024=293,986 ✅；山地男161,424+山地女174,046=335,470 ✅；原住民629,456+非原住民22,475,916=23,105,372 全國人口合理。獨立外部對照：內政部〈115年第8週內政統計通報〉標題『114年底原住民人口數62.9萬人，較113年底增加2.9%』與 629,456 相符，屬不同管道之官方發布，構成有效交叉驗證。⚠️ 期別差異：本站現用 ODRP018 為 115Y06 的 637,620，本資料集為 114Y12M 的 629,456，半年差 8,164 與年增2.9%相符，但【兩者不同期，不可互相取代，同圖並陳必須標示基準日】。⚠️ 待釐清：SEGIS 村里級 7,751 列 vs ODRP018 7,771 列，相差 20，可能為期別造成之村里增併或『村里』認定範圍不同，取用村里級前必須釐清否則兩來源無法對接。⚠️ 限制：無族別、無平埔族群欄位，gap-pingpu-household-population 完全未被填補；且為年度資料，【無法用來追蹤西拉雅族逐月身分登記數】，該項仍只能靠 ODRP018。⚠️ 自動化障礙：oCode 為每個『資料集×期別×空間單元×空間範圍』各一組的96位十六進位碼，無 period 參數、不可推導，與原民會月報16位隨機ID同一個病；可能的路徑是從 data.gov.tw 資料集頁取得當期 oCode 清單（dataset 18650 列有44條），但該清單是否有機器可讀介面、新期別上架後舊 oCode 是否失效，均尚未驗證。⚠️ 授權附帶義務：須以適當方式清楚註明來源『社會經濟資料服務平台』或供應機關，未註明視為未獲授權。平台頁尾的 © All Right Reserved 是網站著作權宣告，與資料集開放授權為兩件事，勿誤判為不可用。⚠️ 同平台另有『須申請資料』一類，規範明文不得再轉授權，取用前必須確認該資料集 是否需申請＝不需申請。本資料集實測：未帶 cookie 匿名請求 HTTP 200 回傳 JSON。",
+      "licenseUrl": "https://segis.moi.gov.tw/STATCloud/DataUseInfo"
+    },
+    {
+      "id": "moi-segis-indigenous-indicator-11412",
+      "title": "行政區原住民人口指標（縣市／鄉鎮市區／村里）SEGIS",
+      "agency": "內政部統計處（經社會經濟資料服務平台 SEGIS 供應）",
+      "url": "https://segis.moi.gov.tw/STATCloud/Index",
+      "downloadUrl": "https://segisws.moi.gov.tw/STATWSSTData/OpenService.asmx/GetAdminSTDataForOpenCode?oCode=ECC48479C0B91632E91C5874DF23C60E51A1FBEE829C41DBE0F35754759044304417DC0FB883090CD5421BC7960893AF",
+      "format": "JSON（另供 XML / GeoJSON(TWD97) / GeoJSON(WGS84) / CSV / SHP）",
+      "dataDate": "2025-12（民國114年12月，欄位值為 114Y12M）",
+      "downloadedAt": "尚未下載（2026-08-11 線上查證）",
+      "updatedAt": "115/01/20（平台標示之取得時間）",
+      "updateFrequency": "平台標示「不定期更新」，實質為年度（各年12月底）",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "primary-source",
+      "notes": "★【尚未取用，且評估為用處有限】2026-08-11 查證，見 docs/segis-check.md。欄位只有比率：O_PER 原住民人口比率、O_DEPENDENCY_PER 扶養比、O_A0A14_A15A65_PER 扶幼比、O_A65UP_A15A64_PER 扶老比、O_A65_A0A14_PER 老化指數。【沒有人數】。這些比率都能從 moi-segis-indigenous-population-11412 自行計算，而且自行計算才符合本專案『計算值須標為 derived-by-this-project』的紀律——直接引用本資料集的比率會把一個他人計算值當成官方統計呈現。唯一獨有的是年齡結構指標（扶老/扶幼/老化指數），邊際價值低。⚠️ 本資料集的村里級同樣有 TOWN_ID 壞欄位問題（7,751 列中 7,218 列 V_ID 前綴對不上 TOWN_ID，TOWN_ID 僅 22 個相異值），詳見 moi-segis-indigenous-population-11412 的格式陷阱二。實測：匿名請求 HTTP 200，2,962,405 bytes，7,751 列，無分頁；274 個村里 O_PER 為 0，最大值 99.04。授權與自動化限制同 moi-segis-indigenous-population-11412。",
+      "licenseUrl": "https://segis.moi.gov.tw/STATCloud/DataUseInfo"
     }
   ]
 }
