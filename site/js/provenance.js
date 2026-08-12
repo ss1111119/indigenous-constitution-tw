@@ -86,6 +86,16 @@ function place(trigger) {
   popover.style.left = `${Math.max(8, left)}px`;
 }
 
+/* 取某個來源的基準日。用於需要把期別直接標在畫面上、而非收在彈出視窗裡的場合
+   （例如平埔族群首次出現非零值時，數字本身必須帶著它所屬的期別）。
+
+   沿用上面那個已快取的 promise，所以不會多一次網路請求。
+   查不到記錄時回傳識別碼本身：標一個可追查的 id，好過標一個空白。 */
+export async function periodOf(sourceId) {
+  const doc = await sources();
+  return doc.sources.find((s) => s.id === sourceId)?.dataDate ?? sourceId;
+}
+
 /* 把一個數字包成可查來源的元素。
    數字本身仍是純文字，螢幕閱讀器讀到的是「數字，按鈕，查看來源」。 */
 export function traceable(value, { sourceId, field, nature }) {

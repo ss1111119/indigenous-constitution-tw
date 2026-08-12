@@ -13,7 +13,16 @@
 # 就有兩套路徑解析邏輯，而分歧只會在部署後才被發現。
 #
 # 相依：僅 Python 標準函式庫。前端維持無 build step、無 npm 相依，
-# 這支腳本只搬檔案，不做任何轉換、打包或壓縮。
+# 這支腳本只搬檔案，除了下述唯一的一種取代之外不做任何轉換、打包或壓縮。
+#
+# 唯一被允許的轉換：把 index.html 的 {{DATA_PERIOD}} 換成實際載入資料的期別。
+# 理由見 scheduled-data-refresh/design.md 決策三——這句話是「發佈時才知道正確值」
+# 的內容，讓它保持靜態就等於保證它會過期；而基準日必須在停用 JavaScript 時仍可見，
+# 所以不能交給前端在執行期渲染。
+#
+# 這個例外【僅此一種】，不是模板機制的開端：取代對象是單一個固定字串，
+# 值的來源鏈是固定的 processed JSON → _sourceId → sources.json → dataDate，
+# 沒有運算式、沒有迴圈、沒有條件。要再加第二種取代之前，先回去讀那條規格。
 
 import json
 import shutil
@@ -49,6 +58,49 @@ REQUIRED_DATA = [
 # 縣市人口資料推導——因為下鑽功能的前提正是「每個出現在縣市清單裡的縣市，
 # 都要有對應的鄉鎮圖資」。從資料推導等於順便驗證了這個 join。
 COUNTY_POPULATION = 'processed/population-by-county.json'
+
+# 期別佔位符。頁面上每一處陳述基準日的地方都用它，取代後三處必然一致。
+PERIOD_PLACEHOLDER = '{{DATA_PERIOD}}'
+
+
+def resolve_period():
+    """由縣市人口資料的 _sourceId 對應 data/sources.json，取得該來源的 dataDate。
+
+    取縣市人口資料而非其他檔，是因為頁面陳述的基準日講的就是人口數字的期別。
+    找不到對應記錄時直接中止：寧可不發佈，也不要發出一個期別空白或寫著
+    未解析佔位符的頁面——那會讓讀者以為看到的是最新資料。
+    """
+    with (DATA_SRC / COUNTY_POPULATION).open(encoding='utf-8') as f:
+        source_id = json.load(f)['_sourceId']
+    with (DATA_SRC / 'sources.json').open(encoding='utf-8') as f:
+        sources = json.load(f)['sources']
+
+    for entry in sources:
+        if entry['id'] == source_id:
+            period = entry.get('dataDate')
+            if not period:
+                sys.exit(f'組建中止：來源記錄 {source_id} 沒有 dataDate 欄位')
+            return source_id, period
+
+    sys.exit(
+        f'組建中止：{COUNTY_POPULATION} 的 _sourceId「{source_id}」'
+        f'在 data/sources.json 中沒有對應記錄，無法解析頁面的基準日。'
+    )
+
+
+def substitute_period(period):
+    """把 _site/index.html 的期別佔位符換成實際期別，其餘位元組原樣不動。"""
+    page = OUT / 'index.html'
+    text = page.read_text(encoding='utf-8')
+    count = text.count(PERIOD_PLACEHOLDER)
+    if count == 0:
+        shutil.rmtree(OUT)
+        sys.exit(
+            f'組建中止：index.html 找不到 {PERIOD_PLACEHOLDER}。'
+            '頁面必須至少有一處由資料決定的基準日，否則基準日又會回到寫死的狀態。'
+        )
+    page.write_text(text.replace(PERIOD_PLACEHOLDER, period), encoding='utf-8')
+    return count
 
 
 def required_township_geo():
@@ -86,8 +138,13 @@ def main():
         )
         sys.exit(1)
 
+    # 期別在複製之前先解析。解析失敗時 _site/ 尚未建立，符合「驗證失敗就沒有 _site/」。
+    source_id, period = resolve_period()
+
     # site/ 的內容攤在 _site/ 根，這樣首頁就是站台根，網址不帶 /site/。
     shutil.copytree(SITE_SRC, OUT)
+
+    substituted = substitute_period(period)
 
     # 資料收在 _site/data/ 之下，與前端的 DATA_BASE 常數（site/js/state.js）
     # 一致。只複製清單上的檔案，data/raw 因此不會進到發佈目錄。
@@ -100,6 +157,7 @@ def main():
     total = sum(p.stat().st_size for p in files)
     print(f'_site/ 組建完成：{len(files)} 個檔案，{total / 1024 / 1024:.2f} MB')
     print(f'  其中資料 {len(required)} 個檔案（不含 data/raw）')
+    print(f'  基準日 {period}（{source_id}），取代 {substituted} 處')
 
 
 if __name__ == '__main__':

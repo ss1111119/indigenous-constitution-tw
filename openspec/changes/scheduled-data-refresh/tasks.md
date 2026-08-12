@@ -12,11 +12,11 @@
 
 ## 3. 期別與資料狀態改為資料驅動
 
-- [ ] 3.1 `scripts/build-site.py` 支援單一種取代：組建時把頁面中的期別佔位符換成由 processed JSON 的 `_sourceId` 對應 `data/sources.json` 取得的 `dataDate`，其餘位元組原樣複製，不引入通用模板機制、不打包、不壓縮，且維持只用標準函式庫。來源記錄不存在時以非零狀態碼結束、指出無法解析的識別碼、且不留下 `_site/`。驗證：組建後比對 `_site/index.html` 與 `site/index.html`，確認差異僅在期別處；暫時把 `_sourceId` 改為不存在的值後重跑，確認非零退出、stderr 指出該識別碼、`_site/` 不存在。涵蓋 Requirement: The publish build performs exactly one kind of substitution；實作 design 決策三：期別文字由組建時取代注入，這是 build-site.py 唯一被允許的轉換。
+- [x] 3.1 `scripts/build-site.py` 支援單一種取代：組建時把頁面中的期別佔位符換成由 processed JSON 的 `_sourceId` 對應 `data/sources.json` 取得的 `dataDate`，其餘位元組原樣複製，不引入通用模板機制、不打包、不壓縮，且維持只用標準函式庫。來源記錄不存在時以非零狀態碼結束、指出無法解析的識別碼、且不留下 `_site/`。驗證：組建後比對 `_site/index.html` 與 `site/index.html`，確認差異僅在期別處；暫時把 `_sourceId` 改為不存在的值後重跑，確認非零退出、stderr 指出該識別碼、`_site/` 不存在。涵蓋 Requirement: The publish build performs exactly one kind of substitution；實作 design 決策三：期別文字由組建時取代注入，這是 build-site.py 唯一被允許的轉換。
 
-- [ ] 3.2 `site/index.html` 中所有陳述基準日的位置改為佔位符（人口面板的無腳本說明、頁尾資料來源、資料缺口段落），使頁面顯示的基準日恆等於實際載入資料的期別，且停用 JavaScript 時仍看得到基準日。驗證：組建後以靜態伺服器開啟 `_site/`，確認三處顯示同一個期別且與 `population-by-county.json` 的 `_sourceId` 相符；於瀏覽器停用 JavaScript 重新載入，確認基準日仍出現；全檔搜尋「115 年 6 月」應無結果。涵蓋 Requirement: The displayed baseline period is derived from the data；實作 design 決策三。
+- [x] 3.2 `site/index.html` 中所有陳述基準日的位置改為佔位符（人口面板的無腳本說明、頁尾資料來源、資料缺口段落），使頁面顯示的基準日恆等於實際載入資料的期別，且停用 JavaScript 時仍看得到基準日。驗證：組建後以靜態伺服器開啟 `_site/`，確認三處顯示同一個期別且與 `population-by-county.json` 的 `_sourceId` 相符；於瀏覽器停用 JavaScript 重新載入，確認基準日仍出現；全檔搜尋「115 年 6 月」應無結果。涵蓋 Requirement: The displayed baseline period is derived from the data；實作 design 決策三。
 
-- [ ] 3.3 平埔族群三態改由載入的資料判定：`site/js/panel-population.js` 依「欄位不存在／存在且為零／存在且大於零」三種情形切換呈現，不以當前日期、不以登記開放日、不以任何寫死旗標判定；出現非零值時顯示數字並標註所屬期別。驗證：以現行資料確認顯示「尚無登記」；在本機把 `indigenous_pingpu` 改為非零後重跑組建，確認切換為顯示數字與期別；移除該欄位後確認顯示為「該期官方統計尚無此欄位」且時間序列不補零。涵蓋 Requirement: Data state is determined by the data, not by the calendar；實作 design 決策四：平埔族群三態由資料判定，不由日期判定。
+- [x] 3.3 平埔族群三態改由載入的資料判定：`site/js/panel-population.js` 依「欄位不存在／存在且為零／存在且大於零」三種情形切換呈現，不以當前日期、不以登記開放日、不以任何寫死旗標判定；出現非零值時顯示數字並標註所屬期別。驗證：以現行資料確認顯示「尚無登記」；在本機把 `indigenous_pingpu` 改為非零後重跑組建，確認切換為顯示數字與期別；移除該欄位後確認顯示為「該期官方統計尚無此欄位」且時間序列不補零。涵蓋 Requirement: Data state is determined by the data, not by the calendar；實作 design 決策四：平埔族群三態由資料判定，不由日期判定。
 
 ## 4. 排程刷新流程
 

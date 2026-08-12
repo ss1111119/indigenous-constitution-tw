@@ -10,7 +10,7 @@
  */
 
 import { createPanel, fmt, chartTable } from './panel.js';
-import { traceable } from './provenance.js';
+import { traceable, periodOf } from './provenance.js';
 
 const RECOGNISED = [
   ['amis', '阿美族'], ['atayal', '泰雅族'], ['paiwan', '排灣族'], ['bunun', '布農族'],
@@ -33,18 +33,36 @@ const BAR_COLOR_DARK = '#3987e5';
 function rowFor(dataset, region) {
   if (region.level === 'national') {
     /* 全國：各縣市加總。這是本站計算而非官方直接發布的分區彙總，
-       但族別總數與原民會月報一致（見 sources.json 的 natureRule）。 */
+       但族別總數與原民會月報一致（見 sources.json 的 natureRule）。
+
+       只彙總【資料裡真的有】的欄位。若照著常數清單一律建 0 再累加，
+       來源沒有的欄位會被這一步變成「值為 0」，三態就此塌成兩態——
+       「該期沒有這個統計類別」與「有這個類別但沒人登記」再也分不開。 */
+    const first = dataset.data[0] ?? {};
+    const keys = [...RECOGNISED, ...PINGPU, ['undeclared']]
+      .map(([key]) => key)
+      .filter((key) => key in first);
+
     const total = { indigenous_total: 0 };
-    for (const [key] of [...RECOGNISED, ...PINGPU, ['undeclared']]) total[key] = 0;
+    for (const key of keys) total[key] = 0;
     for (const r of dataset.data) {
       total.indigenous_total += r.indigenous_total;
-      for (const k of Object.keys(total)) {
-        if (k !== 'indigenous_total') total[k] += r[k];
-      }
+      for (const key of keys) total[key] += r[key];
     }
     return total;
   }
   return dataset.data.find((r) => r.district_code === region.code) ?? null;
+}
+
+/* 平埔族群的三種狀態，判定依據【只有載入的資料】。
+   不看當前日期、不看登記開放日、不看任何寫死的旗標——以日期判定會在 ODRP
+   延遲發布時說謊：登記已開放但該期資料還沒出來時，頁面會宣稱有登記數，
+   而實際載入的仍是零。見 design 決策四。 */
+function pingpuState(row) {
+  const present = PINGPU.filter(([key]) => typeof row[key] === 'number');
+  if (present.length === 0) return { state: 'absent', total: null, present };
+  const total = present.reduce((sum, [key]) => sum + row[key], 0);
+  return { state: total > 0 ? 'registered' : 'zero', total, present };
 }
 
 function render(container, [dataset], region) {
@@ -147,50 +165,91 @@ function render(container, [dataset], region) {
   ));
 
   /* --- 平埔族群：狀態而非量值 --- */
-  const pingpuTotal = PINGPU.reduce((sum, [key]) => sum + row[key], 0);
+  const pingpu = pingpuState(row);
   const box = document.createElement('div');
   box.className = 'zero-state';
+  box.dataset.state = pingpu.state;
 
   const h = document.createElement('h4');
-  h.textContent = `平埔族群 10 族：尚無登記（${fmt(pingpuTotal)} 人）`;
-  box.append(h);
-
   const list = document.createElement('p');
   list.className = 'zero-state-list';
-  list.textContent = PINGPU.map(([, name]) => name).join('、');
-  box.append(list);
-
   const note = document.createElement('p');
   note.className = 'zero-state-note';
-  note.textContent = '戶政司自民國 114 年 11 月起在官方統計中預留這 10 個欄位，'
-    + '目前值為 0——是「還沒有人登記」的官方事實，不是資料缺漏。'
-    + '西拉雅族已於 2026-07-30 核定為第 17 族，身分登記自 2026 年 8 月中開始。';
+
+  if (pingpu.state === 'absent') {
+    h.textContent = '平埔族群 10 族：該期官方統計尚無此欄位';
+    list.textContent = PINGPU.map(([, name]) => name).join('、');
+    note.textContent = '本期載入的資料沒有平埔族群欄位——不是值為 0，而是這個統計類別'
+      + '在該期尚未產生。此狀態下不繪點也不補零：把「法律上還不存在這個身分」'
+      + '記成「有 0 個人」是錯的。';
+  } else if (pingpu.state === 'zero') {
+    h.textContent = `平埔族群 10 族：尚無登記（${fmt(pingpu.total)} 人）`;
+    list.textContent = PINGPU.map(([, name]) => name).join('、');
+    note.textContent = '戶政司自民國 114 年 11 月起在官方統計中預留這 10 個欄位，'
+      + '本期值為 0——是「還沒有人登記」的官方事實，不是資料缺漏。'
+      + '西拉雅族已於 2026-07-30 核定為第 17 族，身分登記自 2026 年 8 月中開始。';
+  } else {
+    /* 非零：顯示數字，並標註它屬於哪一期——沒有期別的登記人數無法解讀，
+       讀者無從判斷這是本月新增還是累計到哪一期。 */
+    h.append('平埔族群 10 族：');
+    h.append(traceable(fmt(pingpu.total), {
+      sourceId: dataset._sourceId,
+      field: '平埔族群人口',
+      nature: dataset._fieldNature[pingpu.present[0][0]] ?? 'official-statistic',
+    }));
+    h.append(' 人');
+
+    const periodTag = document.createElement('span');
+    periodTag.className = 'zero-state-period';
+    h.append(periodTag);
+    periodOf(dataset._sourceId).then((period) => {
+      /* 不加外層括號：dataDate 本身就帶括號（如「2026-06（民國115年6月）」），
+         再包一層會變成巢狀括號。 */
+      periodTag.textContent = `　期別 ${period}`;
+    });
+
+    const registered = pingpu.present.filter(([key]) => row[key] > 0);
+    list.textContent = registered
+      .map(([key, name]) => `${name} ${fmt(row[key])} 人`)
+      .join('、')
+      + (registered.length < pingpu.present.length ? '；其餘尚無登記。' : '');
+    note.textContent = '這是官方統計中首次出現的平埔族群戶籍登記人口。'
+      + '數字與期別均取自載入的資料本身，不由當前日期推定。';
+  }
+
+  box.append(h);
+  box.append(list);
   box.append(note);
 
   /* 三種狀態必須在畫面上分得開，否則讀者無從判斷 0 的意義。
-     這張表本身就是規格——把抽象的紀律變成看得見的對照。 */
+     這張表本身就是規格——把抽象的紀律變成看得見的對照。
+
+     表以【載入資料的欄位狀態】為鍵，日期只列為參考：判定依據是資料不是日曆，
+     兩者在來源延遲發布時會不一致，而屆時該相信的是資料。 */
   const states = document.createElement('table');
   states.className = 'state-table';
   states.innerHTML = `
-    <caption>平埔族群人口的三種狀態</caption>
+    <caption>平埔族群人口的三種狀態（目前為第 ${
+      { absent: 1, zero: 2, registered: 3 }[pingpu.state]
+    } 列）</caption>
     <thead>
-      <tr><th>期間</th><th>官方欄位</th><th>本站呈現</th></tr>
+      <tr><th>載入資料的欄位</th><th>本站呈現</th><th>對應期間（參考）</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td>民國 114 年 10 月以前</td>
+      <tr${pingpu.state === 'absent' ? ' aria-current="true"' : ''}>
         <td>欄位<strong>不存在</strong></td>
-        <td data-state="absent">時間序列不繪點，也不繪為 0</td>
+        <td data-state="absent">標為「該期尚無此欄位」，不繪點也不繪為 0</td>
+        <td>民國 114 年 10 月以前</td>
       </tr>
-      <tr>
-        <td>民國 114 年 11 月起</td>
+      <tr${pingpu.state === 'zero' ? ' aria-current="true"' : ''}>
         <td>欄位存在，值為 <strong>0</strong></td>
         <td data-state="zero">顯示「尚無登記」</td>
+        <td>民國 114 年 11 月起</td>
       </tr>
-      <tr>
-        <td>2026 年 8 月中起</td>
-        <td>預期出現非零值</td>
-        <td data-state="future">實線，標註「登記自 2026-08 起算」</td>
+      <tr${pingpu.state === 'registered' ? ' aria-current="true"' : ''}>
+        <td>欄位存在，值<strong>大於 0</strong></td>
+        <td data-state="registered">顯示人數，並標註所屬期別</td>
+        <td>登記自 2026 年 8 月中開始</td>
       </tr>
     </tbody>
   `;
@@ -205,8 +264,10 @@ function render(container, [dataset], region) {
 
   container.append(box);
 
-  /* --- 組成加總必須等於原住民合計，否則圓餅圖式的呈現會誤導 --- */
-  const sum = bars.reduce((s, d) => s + d.value, 0) + pingpuTotal;
+  /* --- 組成加總必須等於原住民合計，否則圓餅圖式的呈現會誤導 ---
+     欄位不存在時以 0 計入加總，這不是把缺欄位當成零值呈現——畫面上仍標示為
+     「該期尚無此欄位」，這裡只是讓加總在該期沒有這個類別時仍然成立。 */
+  const sum = bars.reduce((s, d) => s + d.value, 0) + (pingpu.total ?? 0);
   const foot = document.createElement('p');
   foot.className = 'chart-foot';
   foot.textContent = sum === row.indigenous_total
