@@ -275,6 +275,27 @@
       "sha256Kind": "normalised-data"
     },
     {
+      "id": "moi-odrp013-11507",
+      "title": "現住人口數按性別及原住民身分分（新增區域代碼）ODRP013",
+      "agency": "內政部戶政司",
+      "url": "https://data.gov.tw/dataset/127525",
+      "downloadUrl": "https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP013/11507",
+      "format": "JSON",
+      "dataDate": "2026-07（民國115年7月）",
+      "downloadedAt": "2026-08-12",
+      "updateFrequency": "月",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "unverified",
+      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
+      "sha256": {
+        "moi-odrp013-population-by-indigenous-status-11507.json": "c675fa3a564b02bc4e64b3b312a120e9f2ba47a3ecd31e0165d8c0d094111f52"
+      },
+      "sha256Kind": "normalised-data"
+    },
+    {
       "id": "moi-odrp018-11506",
       "title": "現住原住民人口按性別、身分、原住民族別分（新增區域代碼）ODRP018",
       "agency": "內政部戶政司",
@@ -292,6 +313,27 @@
       "notes": "★ 族別資料的主來源，各維度均優於原民會月報：村里層級7,771列（月報僅到鄉鎮）、26個族別欄位（月報16族）、API可自動化（月報連結為16位隨機ID不可推導）、涵蓋2018-01起逐月、授權明確。★★ 官方 schema 已列出全部10個平埔族群欄位：siraya西拉雅/ketagalan凱達格蘭/taokas道卡斯/pazeh巴宰/papora拍瀑拉/babuza巴布薩/hoanya洪雅/kaxabu噶哈巫/taivoan大武壠/makatau馬卡道，2026-06 值皆為0。⚠️ 洪雅族有欄位但不在9族申請名單中，原因待確認——官方對『平埔族群包含哪些族』的定義與申請名單不一致，席次模擬器讓使用者選『哪些族納入』時須處理此差異。⚠️ 另有 indigenous_undeclared 未申報族別 7,768 人，畫族別圓餅圖時不可省略否則加總不等於總數；原民會月報是否有對應欄位待確認。三方驗證通過：16族合計637,620 = indigenous_total = 原民會月報總數，六個主要族別逐一相符。⚠️ 與 ODRP015（年齡）仍是兩組獨立二維表，無年齡×族別交叉，見 gap-tribe-by-age-crosstab。★★★【格式陷阱：pingpu_* 重複計算】本 endpoint 有兩組平行的族別結構，混加會重複計算：(A) 主清單 27 個 stem＝16 現行族(amis/atayal/paiwan/bunun/rukai/pinuyumayan/cou/saisiyat/yami/thao/kavalan/truku/sakizaya/sediq/hlaalua/kanakanavu) + 10 平埔族群 + undeclared，其 m+f 加總＝indigenous_total；(B) pingpu_total 加 11 個 pingpu_<族>（含 pingpu_kavalan、pingpu_undeclared），是【依平埔身分別的交叉表，不是額外的人】。⚠️ 2026-06 時平埔全為 0，故兩組怎麼加都得到 637,620，陷阱看不出來；平埔身分登記自 2026-08 中開始後才會浮現。轉檔一律只用主清單(A)，並以『族別加總＝indigenous_total』的自我驗證守住——scripts/build-population.ps1 已實作，驗證失敗即中止不產檔。任何要重寫此段解析的人都會再踩一次，故記錄於此而非僅程式註解。",
       "sha256": {
         "moi-odrp018-population-by-tribe-11506.json": "ee2691b3bec278b8bd8a5921d5fe09461e9cbbcb2fc6ac9cca02a8b0dbf80a8f"
+      },
+      "sha256Kind": "normalised-data"
+    },
+    {
+      "id": "moi-odrp018-11507",
+      "title": "現住原住民人口按性別、身分、原住民族別分（新增區域代碼）ODRP018",
+      "agency": "內政部戶政司",
+      "url": "https://www.ris.gov.tw/rs-opendata/api/Main/docs/v1",
+      "downloadUrl": "https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP018/11507",
+      "format": "JSON",
+      "dataDate": "2026-07（民國115年7月）",
+      "downloadedAt": "2026-08-12",
+      "updateFrequency": "月（滯後約2個月）",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "unverified",
+      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
+      "sha256": {
+        "moi-odrp018-population-by-tribe-11507.json": "2f46463bb4cbd749625ec27795f1f1492e44d3cd25346e43c9196c1e8b2c1621"
       },
       "sha256Kind": "normalised-data"
     },
