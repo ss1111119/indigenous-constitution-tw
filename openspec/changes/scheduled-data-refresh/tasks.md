@@ -2,9 +2,9 @@
 
 ## 1. 回歸測試（先行，後續自動化的安全網）
 
-- [ ] 1.1 建立測試入口與成功樣本：`tests/run-regression.ps1` 以單一指令執行轉檔腳本的回歸測試，成功時狀態碼 0；`tests/fixtures/` 下的成功樣本保留 ODRP 真實欄位名稱與型別、內部自洽（族別加總等於 `indigenous_total`），不錄製完整回應（ODRP018 單期約 40MB 不入庫）。驗證：執行 `pwsh tests/run-regression.ps1`，確認狀態碼為 0 且輸出列出通過的斷言名稱；確認 `tests/fixtures/` 下無單檔超過 1MB。涵蓋 Requirement: Conversion scripts have regression tests over recorded inputs；實作 design 決策五：回歸測試以錄製的小樣本為輸入，並涵蓋失敗路徑。
+- [x] 1.1 建立測試入口與成功樣本：`tests/run-regression.ps1` 以單一指令執行轉檔腳本的回歸測試，成功時狀態碼 0；`tests/fixtures/` 下的成功樣本保留 ODRP 真實欄位名稱與型別、內部自洽（族別加總等於 `indigenous_total`），不錄製完整回應（ODRP018 單期約 40MB 不入庫）。驗證：執行 `pwsh tests/run-regression.ps1`，確認狀態碼為 0 且輸出列出通過的斷言名稱；確認 `tests/fixtures/` 下無單檔超過 1MB。涵蓋 Requirement: Conversion scripts have regression tests over recorded inputs；實作 design 決策五：回歸測試以錄製的小樣本為輸入，並涵蓋失敗路徑。
 
-- [ ] 1.2 補上失敗路徑樣本與斷言：新增兩個刻意破壞的樣本——族別加總不等於 `indigenous_total`、以及平埔兩組平行結構混加後超過總數——並斷言轉檔中止、狀態碼非零、且執行後沒有留下任何產出檔案。驗證：執行測試入口，確認兩個破壞樣本各自使測試偵測到「腳本已中止」與「無產出檔案」兩個條件皆成立；若移除腳本中的自我驗證，此測試必須轉為失敗。涵蓋 Requirement: Regression tests cover the self-validation failure paths；實作 design 決策五。
+- [x] 1.2 補上失敗路徑樣本與斷言：新增兩個刻意破壞的樣本——族別加總不等於 `indigenous_total`、以及平埔兩組平行結構混加後超過總數——並斷言轉檔中止、狀態碼非零、且執行後沒有留下任何產出檔案。驗證：執行測試入口，確認兩個破壞樣本各自使測試偵測到「腳本已中止」與「無產出檔案」兩個條件皆成立；若移除腳本中的自我驗證，此測試必須轉為失敗。涵蓋 Requirement: Regression tests cover the self-validation failure paths；實作 design 決策五。
 
 ## 2. 轉檔腳本的變動幅度檢查
 
