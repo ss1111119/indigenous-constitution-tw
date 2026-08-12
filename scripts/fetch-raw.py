@@ -10,7 +10,6 @@
 #
 # 相依：僅 Python 標準函式庫。
 
-import hashlib
 import json
 import sys
 import urllib.error
@@ -18,37 +17,25 @@ import urllib.request
 from datetime import date
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'lib'))
+from odrp import (  # noqa: E402  （必須在調整 sys.path 之後）
+    AGENCY, DATASETS, normalised_data_hash, raw_filename, split_source_id,
+)
+
+# Windows 主控台是 cp950，編不出 ⚠️ 這類符號，會在 print 當場擲例外——
+# 訊息本身無關緊要，卻會讓一次成功的下載在最後一步中止。改為無法編碼就替換字元：
+# 輸出的可讀性不值得用整支腳本的成敗去換。
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, 'reconfigure'):
+        _stream.reconfigure(errors='replace')
+
 REPO = Path(__file__).resolve().parent.parent
 SOURCES = REPO / 'data' / 'sources.json'
 RAW = REPO / 'data' / 'raw'
 
-# 可由本腳本取得的來源。其餘來源（xls 需人工點擊、zip 為一次性下載）不在此列——
+# 可自動取得的是 ODRP 的兩個 API 資料集，【任何期別】皆可——期別是參數不是身分。
+# 其餘來源（xls 需人工點擊、zip 為一次性下載）不在此列，
 # 它們的雜湊供人工比對，不是自動化取得的對象。
-FETCHABLE = {
-    'moi-odrp018-11506': {
-        'endpoint': 'https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP018',
-        'filename': 'moi-odrp018-population-by-tribe-{period}.json',
-        'dataset': '現住原住民人口按性別、身分、原住民族別分（新增區域代碼）ODRP018',
-    },
-    'moi-odrp013-11506': {
-        'endpoint': 'https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP013',
-        'filename': 'moi-odrp013-population-by-indigenous-status-{period}.json',
-        'dataset': '現住人口數按性別及原住民身分分（新增區域代碼）ODRP013',
-    },
-}
-
-AGENCY = '內政部戶政司'
-
-
-def normalised_data_hash(rows):
-    """對 data 陣列取正規化雜湊。
-
-    參數必須與 data/sources.json 的 schema.sha256Kind 所述完全一致，
-    否則別人算不出同一個值。不要在此處「順手優化」序列化參數。
-    """
-    canon = json.dumps(rows, sort_keys=True, ensure_ascii=False,
-                       separators=(',', ':'))
-    return hashlib.sha256(canon.encode('utf-8')).hexdigest()
 
 
 def fetch_all_pages(endpoint, period):
@@ -90,28 +77,33 @@ def main(argv):
     by_id = {s['id']: s for s in sources['sources']}
 
     if len(argv) < 2:
-        print('可取得的識別碼：')
-        for sid, cfg in FETCHABLE.items():
-            rec = by_id.get(sid, {})
-            print(f'  {sid:<22} {cfg["endpoint"]}  期別 {rec.get("dataDate", "?")}')
+        print('可取得的識別碼（前綴 + 期別）：')
+        for sid in sorted(by_id):
+            prefix, period = split_source_id(sid)
+            if prefix:
+                print(f'  {sid:<22} {DATASETS[prefix]["endpoint"]}  '
+                      f'期別 {by_id[sid].get("dataDate", "?")}')
         print('\n其餘來源需人工下載，其雜湊記於 data/sources.json 供比對。')
         return 0
 
     sid = argv[1]
-    if sid not in FETCHABLE:
+    # 期別取自 id 尾碼（例如 moi-odrp018-11506 → 11506）。不從 dataDate 取，
+    # 因為那是人類可讀格式（「2026-06（民國115年6月）」），不是 API 要的民國年月。
+    prefix, period = split_source_id(sid)
+    if prefix is None:
         print(f'無法自動取得：{sid}', file=sys.stderr)
-        print(f'可取得的識別碼：{", ".join(FETCHABLE)}', file=sys.stderr)
+        print(f'可自動取得的資料集：{", ".join(DATASETS)}（後接期別，如 -11507）',
+              file=sys.stderr)
         return 1
 
-    cfg = FETCHABLE[sid]
+    cfg = DATASETS[prefix]
     record = by_id.get(sid)
     if record is None:
         print(f'data/sources.json 中沒有 {sid} 的記錄', file=sys.stderr)
         return 1
 
-    # 期別取自 id 尾碼（例如 moi-odrp018-11506 → 11506）。不從 dataDate 取，
-    # 因為那是人類可讀格式（「2026-06（民國115年6月）」），不是 API 要的民國年月。
-    period = argv[2] if len(argv) > 2 else sid.rsplit('-', 1)[-1]
+    if len(argv) > 2:
+        period = argv[2]
     if not period.isdigit():
         print(f'無法從識別碼 {sid} 推出期別，請以第二個參數指定，例如 11506',
               file=sys.stderr)
@@ -129,7 +121,7 @@ def main(argv):
     print(f'  {pages} 頁、{len(rows)} 列')
 
     digest = normalised_data_hash(rows)
-    filename = cfg['filename'].format(period=period)
+    filename = raw_filename(prefix, period)
     expected = (record.get('sha256') or {}).get(filename)
 
     if expected is None:

@@ -50,6 +50,9 @@ data/raw/**/*.json
 # 若日後確認原民會確實保留歷史期數，可回頭收掉這條例外。
 !data/raw/cip-11506-*.xls
 
+# Python 位元碼快取。scripts/lib/ 被 import 之後才會出現。
+__pycache__/
+
 # 暫存
 *.log
 *.tmp

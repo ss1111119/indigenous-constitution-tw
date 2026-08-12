@@ -1,0 +1,140 @@
+# 探測戶政司 ODRP 是否發布新期別，有的話重跑轉檔、提交資料、並觸發重新發佈。
+#
+# 沒有新期別的日子，這個流程不留下任何 commit、也不觸發部署——排程每天跑，
+# 但版本庫的歷史只在資料真的變動時才增加一筆。
+#
+# 為何需要明確觸發部署（決策二）：以 GITHUB_TOKEN 推送的 commit 不會觸發其他 workflow
+# 的 push 事件（GitHub 的遞迴防護）。若不處理，資料會更新進版本庫但站台不會重新發佈——
+# 而且流程還是綠燈，沒有人會發現。
+#
+# 權限與 deploy.yml 不同：這裡要寫版本庫（contents: write）與觸發其他流程
+# （actions: write），deploy.yml 只需讀原始碼。
+#
+# 失敗即紅燈，不靜默略過：排程長期無人看管，紅燈是唯一會被注意到的訊號。
+# 唯一「沒事發生」的正常結局是探測不到新期別。
+
+name: Refresh population data
+
+on:
+  # UTC 21:00 = 臺北時間隔日 05:00。ODRP 的發布日不固定、滯後約兩個月，
+  # 故每日探測；成本只是一次 HTTP 請求，而每週探測最多會延遲 6 天。
+  schedule:
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+    inputs:
+      period:
+        description: '指定期別（民國年月，如 11507）。留空則自動探測。'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+# 同時只跑一個。兩個流程同時轉檔並推送必然衝突，而中途取消可能停在
+# 「已提交但未觸發部署」的狀態。
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      # 決定要轉哪一期。手動指定時略過探測——那是給「已人工確認、需要重跑」用的，
+      # 例如幅度檢查擋下了一次真實的大幅變動。其餘驗證一律照常套用。
+      # 手動輸入經由環境變數傳入而非直接內插進腳本：內插會讓 workflow 輸入變成
+      # 可執行的程式碼片段。並強制 5 碼數字，把「11507」以外的東西擋在打 API 之前。
+      - name: Resolve period
+        id: period
+        shell: pwsh
+        env:
+          MANUAL_PERIOD: ${{ inputs.period }}
+        run: |
+          $manual = "$env:MANUAL_PERIOD".Trim()
+          if($manual){
+            if($manual -notmatch '^\d{5}$'){
+              throw "期別格式不正確：『$manual』。應為 5 碼民國年月，如 11507。"
+            }
+            Write-Host "手動指定期別：$manual（略過探測）"
+            "period=$manual" >> $env:GITHUB_OUTPUT
+          } else {
+            # 探測腳本失敗時會擲出例外，GitHub 的 pwsh 以 ErrorActionPreference=Stop
+            # 執行，該步驟隨之失敗。不自行檢查 $LASTEXITCODE——它對 .ps1 不會被設定，
+            # 未定義時的比較會走進「exit $null」，那等於把失敗靜靜報成沒有新期別。
+            $probed = (& ./scripts/probe-odrp-period.ps1 | Select-Object -Last 1)
+            "period=$probed" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: No new period
+        if: steps.period.outputs.period == ''
+        run: echo '沒有比版本庫記載更新的期別，正常結束：不提交、不部署。'
+
+      # --- 以下步驟只在有期別可轉時執行 ---
+
+      # 登記必須在轉檔之前：轉檔腳本會拒絕未登記的 sourceId。
+      # 已登記過的期別（例如重跑）會被略過，不會產生重複記錄。
+      - name: Register period in sources.json
+        if: steps.period.outputs.period != ''
+        run: python scripts/register-period.py register ${{ steps.period.outputs.period }}
+
+      # 以 fetch-raw.py 取原始檔而非讓轉檔腳本自己下載：它會依 totalPage 逐頁合併
+      # 並核對宣告列數，缺頁即失敗。ODRP 分頁一次只回 2000 列，村里層級有 7,700 餘列。
+      - name: Fetch raw inputs
+        if: steps.period.outputs.period != ''
+        run: |
+          python scripts/fetch-raw.py moi-odrp013-${{ steps.period.outputs.period }}
+          python scripts/fetch-raw.py moi-odrp018-${{ steps.period.outputs.period }}
+
+      - name: Record checksums
+        if: steps.period.outputs.period != ''
+        run: python scripts/register-period.py seal ${{ steps.period.outputs.period }}
+
+      # 轉檔內含加總自我驗證與變動幅度檢查。任一未過即以非零狀態碼中止且不產出檔案，
+      # job 隨之失敗，後面的提交與部署都不會執行——絕不把異常數字推上線。
+      - name: Convert
+        if: steps.period.outputs.period != ''
+        shell: pwsh
+        run: ./scripts/build-population.ps1 -Period ${{ steps.period.outputs.period }}
+
+      # 回歸測試在此再跑一次：轉檔腳本是在 runner 上執行的，本機綠燈不等於這裡綠燈。
+      - name: Regression tests
+        if: steps.period.outputs.period != ''
+        shell: pwsh
+        run: ./tests/run-regression.ps1
+
+      # 只提交 data/ 之下的檔案。轉檔不應該動到其他任何東西，
+      # 若有，那是需要人看一眼的事，不是可以順手一起提交的。
+      - name: Commit data
+        id: commit
+        if: steps.period.outputs.period != ''
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/processed data/sources.json
+          if git diff --cached --quiet; then
+            echo '產出與版本庫現有檔案相同，不提交。'
+            echo 'committed=false' >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "data: 更新至期別 ${{ steps.period.outputs.period }}
+
+          由 .github/workflows/refresh-data.yml 自動提交。
+          加總自我驗證與變動幅度檢查均已通過；來源記錄的 verification 為 unverified，
+          尚未經人工與原民會月報交叉驗證。"
+            git push
+            echo 'committed=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      # 明確觸發既有的部署流程，不在此複製組建或發佈邏輯——那會產生第二條部署路徑，
+      # 正是 site-deployment 的單一組建路徑要求所要避免的。
+      - name: Trigger deployment
+        if: steps.commit.outputs.committed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy.yml --ref "${GITHUB_REF_NAME}"
