@@ -61,6 +61,14 @@ function Invoke-ConversionInSandbox {
   Copy-Item (Join-Path $repo 'data/sources.json')            (Join-Path $sandbox 'data')
   Copy-Item (Join-Path $caseDir '*.json')                    (Join-Path $sandbox 'data/raw')
 
+  # 幅度檢查以版本庫既有的 processed 檔為前一期基準。案例若附 previous/，
+  # 就先鋪進沙箱，讓檢查有比較對象；沒附的案例會走「首次建置，略過檢查」那條路。
+  $prevDir = Join-Path $caseDir 'previous'
+  if(Test-Path $prevDir){
+    New-Item -ItemType Directory -Force -Path (Join-Path $sandbox 'data/processed') | Out-Null
+    Copy-Item (Join-Path $prevDir '*.json') (Join-Path $sandbox 'data/processed')
+  }
+
   $outLog = Join-Path $sandbox 'stdout.log'
   $errLog = Join-Path $sandbox 'stderr.log'
   $proc = Start-Process -FilePath 'pwsh' -NoNewWindow -Wait -PassThru `
@@ -71,6 +79,7 @@ function Invoke-ConversionInSandbox {
   return @{
     Case     = $Case
     Sandbox  = $sandbox
+    Seeded   = (Test-Path $prevDir) ? @(Get-ChildItem $prevDir -Filter *.json | ForEach-Object { $_.Name }) : @()
     ExitCode = $proc.ExitCode
     Stdout   = (Test-Path $outLog) ? (Get-Content $outLog -Raw -Encoding UTF8) : ''
     Stderr   = (Test-Path $errLog) ? (Get-Content $errLog -Raw -Encoding UTF8) : ''
@@ -101,6 +110,11 @@ $r = Invoke-ConversionInSandbox -Case 'success'
 
 Assert-That -Name 'success：轉檔以狀態碼 0 結束' -Condition ($r.ExitCode -eq 0) `
   -Detail "實際狀態碼 $($r.ExitCode)。stderr: $($r.Stderr)"
+
+# success 案例附了前一期基準（23,200 → 23,265，+0.28%），所以幅度檢查必須是
+# 【跑過並通過】。若沒有這項斷言，檢查被整段略過也會是綠燈。
+Assert-That -Name 'success：幅度檢查實際執行且通過' -Condition ($r.Stdout -match '幅度檢查通過') `
+  -Detail "stdout: $($r.Stdout.Trim())"
 
 $expected = @('population-by-county.json', 'population-by-township.json',
               'tribes-by-county.json', 'tribes-by-township.json')
@@ -155,8 +169,11 @@ Remove-Sandbox $r
 # 只測成功路徑等於沒測到安全網本身：自我驗證的價值全在它擋下了什麼。
 # 兩個樣本都刻意違反腳本內建的檢查，斷言【中止】與【不留下任何產出檔案】兩者皆成立。
 $failureCases = @(
-  @{ Case = 'tribe-sum-mismatch';  Desc = '族別加總不等於 indigenous_total' }
-  @{ Case = 'pingpu-double-count'; Desc = '平埔兩組平行結構混加後超過總數' }
+  @{ Case = 'tribe-sum-mismatch';  Desc = '族別加總不等於 indigenous_total'; Pattern = '自我驗證失敗' }
+  @{ Case = 'pingpu-double-count'; Desc = '平埔兩組平行結構混加後超過總數'; Pattern = '自我驗證失敗' }
+  # 內部完全自洽、所有恆等式都通過，只有相對前一期的總量跳了 +1.16%。
+  # 這是加總驗證抓不到而幅度檢查該擋下的那一類。
+  @{ Case = 'amplitude-jump';      Desc = '總量相對前一期跳增 +1.16%';      Pattern = '幅度檢查失敗' }
 )
 
 foreach($fc in $failureCases){
@@ -167,15 +184,35 @@ foreach($fc in $failureCases){
   Assert-That -Name "$($fc.Case)：轉檔以非零狀態碼中止" -Condition ($f.ExitCode -ne 0) `
     -Detail "實際狀態碼 $($f.ExitCode)——自我驗證未擋下此樣本"
 
-  Assert-That -Name "$($fc.Case)：未留下任何產出檔案" -Condition ($f.Outputs.Count -eq 0) `
-    -Detail "實際產出：$($f.Outputs -join '、')"
+  # 「沒有產出」指的是沒有【新】檔案。鋪進沙箱的前一期基準本來就在那裡，
+  # 不能算成產出；下面另有一項斷言確認它連內容都沒被動過。
+  $produced = @($f.Outputs | Where-Object { $f.Seeded -notcontains $_ })
+  Assert-That -Name "$($fc.Case)：未留下任何產出檔案" -Condition ($produced.Count -eq 0) `
+    -Detail "實際產出：$($produced -join '、')"
 
   # 半寫入的 processed JSON 比沒有檔案更危險，因為它看起來是有效的。
   # 故訊息須指出是自我驗證擋下的，而不是任何一種非零結束都算通過。
   $combined = "$($f.Stdout)`n$($f.Stderr)"
-  Assert-That -Name "$($fc.Case)：訊息指出自我驗證失敗" `
-    -Condition ($combined -match '自我驗證失敗') `
+  Assert-That -Name "$($fc.Case)：訊息指出「$($fc.Pattern)」" `
+    -Condition ($combined -match $fc.Pattern) `
     -Detail "實際輸出：$($combined.Trim())"
+
+  if($fc.Case -eq 'amplitude-jump'){
+    # 被擋下時要能一眼看出擋在哪裡：前後兩期的數值與變動百分比都須出現在 stderr，
+    # 否則值班的人只知道紅燈、不知道是不是真的異常。
+    Assert-That -Name 'amplitude-jump：stderr 指出前一期數值 23265' `
+      -Condition ($f.Stderr -match '23265') -Detail "stderr: $($f.Stderr.Trim())"
+    Assert-That -Name 'amplitude-jump：stderr 指出新期別數值 23535' `
+      -Condition ($f.Stderr -match '23535') -Detail "stderr: $($f.Stderr.Trim())"
+    Assert-That -Name 'amplitude-jump：stderr 指出變動百分比 1.16%' `
+      -Condition ($f.Stderr -match '1\.16') -Detail "stderr: $($f.Stderr.Trim())"
+
+    # 中止時不得改動既有的 processed 檔——半更新的版本庫比沒更新更難收拾。
+    $seedPath = Join-Path $f.Sandbox 'data/processed/population-by-county.json'
+    $origPath = Join-Path $fixtures 'amplitude-jump/previous/population-by-county.json'
+    $same = (Get-FileHash $seedPath).Hash -eq (Get-FileHash $origPath).Hash
+    Assert-That -Name 'amplitude-jump：既有的前一期檔案未被改動' -Condition $same
+  }
 
   Remove-Sandbox $f
 }

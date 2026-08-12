@@ -8,7 +8,7 @@
 
 ## 2. 轉檔腳本的變動幅度檢查
 
-- [ ] 2.1 於 `scripts/build-population.ps1` 加入幅度檢查：新期別的全國原住民總人口相對前一期變動超過 ±1% 時，腳本以非零狀態碼中止、不產出檔案，並在 stderr 指出前後兩期的數值與變動百分比；前一期數值取自版本庫既有的 `data/processed/population-by-county.json`。驗證：以成功樣本執行確認通過；以人工調整為 +1.16% 的樣本執行，確認中止且 stderr 含前後數值；將該檢查納入 `tests/run-regression.ps1`。涵蓋 Requirement: Refreshed data is committed only after validation passes；實作 design 決策六：變動幅度檢查，異常即中止。
+- [x] 2.1 於 `scripts/build-population.ps1` 加入幅度檢查：新期別的全國原住民總人口相對前一期變動超過 ±1% 時，腳本以非零狀態碼中止、不產出檔案，並在 stderr 指出前後兩期的數值與變動百分比；前一期數值取自版本庫既有的 `data/processed/population-by-county.json`。驗證：以成功樣本執行確認通過；以人工調整為 +1.16% 的樣本執行，確認中止且 stderr 含前後數值；將該檢查納入 `tests/run-regression.ps1`。涵蓋 Requirement: Refreshed data is committed only after validation passes；實作 design 決策六：變動幅度檢查，異常即中止。
 
 ## 3. 期別與資料狀態改為資料驅動
 

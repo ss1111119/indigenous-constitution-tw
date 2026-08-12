@@ -298,6 +298,39 @@ $markedCount = @($byTownship.Values | Where-Object { $_.is_indigenous_district }
 Write-Host "  驗證通過：全國 $('{0:N0}' -f $natTotal) 人，原住民 $('{0:N0}' -f $natInd) 人"
 Write-Host "            $($byCounty.Count) 縣市、$($byTownship.Count) 鄉鎮，其中 $markedCount 個為原住民族地區"
 
+# --- 變動幅度檢查（仍在寫檔之前）---
+# 上面的加總驗證只能抓「內部不一致」，抓不到「內部一致但整份資料換了口徑」——
+# 例如上游改了統計對象或欄位語意，各項仍自洽但總量整個位移。這種資料會安靜地
+# 通過所有恆等式檢查然後被自動提交上線，故另設一道對照前一期的幅度檢查。
+#
+# 門檻 ±1%：實測近半年增幅 1.30%（約每月 0.22%），單月 ±1% 有足夠餘裕，
+# 又能擋下數量級錯誤。合法的大幅變動可由刷新流程的「手動指定期別」在人工確認後放行。
+#
+# 前一期數值取自版本庫既有的 processed 檔。首次建置時該檔不存在——此時沒有可比對的
+# 基準，略過檢查而非中止；把「沒有前一期」當成異常會讓乾淨的版本庫無法完成第一次建置。
+$prevPath = Join-Path $repo 'data/processed/population-by-county.json'
+if(Test-Path $prevPath){
+  $prev = Get-Content $prevPath -Raw -Encoding UTF8 | ConvertFrom-Json
+  $prevInd = 0; foreach($c in $prev.data){ $prevInd += $c.indigenous_total }
+  if($prevInd -le 0){
+    Write-Host "  幅度檢查略過：前一期檔案的原住民合計為 $prevInd，無法作為基準"
+  } else {
+    $deltaPct = ($natInd - $prevInd) * 100 / $prevInd
+    $shown = [math]::Round($deltaPct, 4)
+    if([math]::Abs($deltaPct) -gt 1){
+      [Console]::Error.WriteLine(
+        "幅度檢查失敗：全國原住民總人口由 $prevInd（$($prev._sourceId)）變為 $natInd（moi-odrp013-$Period），" +
+        "變動 $shown%，超過 ±1%。未產生任何輸出檔。")
+      [Console]::Error.WriteLine(
+        '若已人工確認此變動為真實，請以刷新流程的手動指定期別重跑，或先行更新前一期基準。')
+      throw "變動幅度檢查失敗（$shown%），中止。"
+    }
+    Write-Host "  幅度檢查通過：原住民總人口 $prevInd → $natInd（$shown%，門檻 ±1%）"
+  }
+} else {
+  Write-Host '  幅度檢查略過：找不到 data/processed/population-by-county.json（首次建置）'
+}
+
 # --- 寫出 ---
 $popNature = @{
   district_code = 'official-statistic'; name = 'official-statistic'

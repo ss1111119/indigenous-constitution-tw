@@ -1,0 +1,98 @@
+{
+  "_sourceId": "moi-odrp013-11505",
+  "_generatedBy": "tests/fixtures（人工構造的前一期基準）",
+  "_generatedAt": "2026-07-15",
+  "_fieldNature": {
+    "district_code": "official-statistic",
+    "indigenous_total": "official-statistic",
+    "indigenous_ratio_pct": "derived-by-this-project",
+    "name": "official-statistic",
+    "population_total": "official-statistic"
+  },
+  "data": [
+    {
+      "district_code": "10002",
+      "name": "宜蘭縣",
+      "population_total": 4902,
+      "indigenous_total": 577,
+      "indigenous_ratio_pct": 11.7707
+    },
+    {
+      "district_code": "10004",
+      "name": "新竹縣",
+      "population_total": 7605,
+      "indigenous_total": 1005,
+      "indigenous_ratio_pct": 13.215
+    },
+    {
+      "district_code": "10005",
+      "name": "苗栗縣",
+      "population_total": 7821,
+      "indigenous_total": 1041,
+      "indigenous_ratio_pct": 13.3103
+    },
+    {
+      "district_code": "10008",
+      "name": "南投縣",
+      "population_total": 8109,
+      "indigenous_total": 1089,
+      "indigenous_ratio_pct": 13.4295
+    },
+    {
+      "district_code": "10010",
+      "name": "嘉義縣",
+      "population_total": 2751,
+      "indigenous_total": 371,
+      "indigenous_ratio_pct": 13.486
+    },
+    {
+      "district_code": "10013",
+      "name": "屏東縣",
+      "population_total": 26487,
+      "indigenous_total": 3627,
+      "indigenous_ratio_pct": 13.6935
+    },
+    {
+      "district_code": "10014",
+      "name": "臺東縣",
+      "population_total": 48465,
+      "indigenous_total": 6765,
+      "indigenous_ratio_pct": 13.9585
+    },
+    {
+      "district_code": "10015",
+      "name": "花蓮縣",
+      "population_total": 46371,
+      "indigenous_total": 6591,
+      "indigenous_ratio_pct": 14.2136
+    },
+    {
+      "district_code": "64000",
+      "name": "高雄市",
+      "population_total": 8397,
+      "indigenous_total": 1137,
+      "indigenous_ratio_pct": 13.5406
+    },
+    {
+      "district_code": "65000",
+      "name": "新北市",
+      "population_total": 2415,
+      "indigenous_total": 315,
+      "indigenous_ratio_pct": 13.0435
+    },
+    {
+      "district_code": "66000",
+      "name": "臺中市",
+      "population_total": 2655,
+      "indigenous_total": 355,
+      "indigenous_ratio_pct": 13.371
+    },
+    {
+      "district_code": "68000",
+      "name": "桃園市",
+      "population_total": 2487,
+      "indigenous_total": 327,
+      "indigenous_ratio_pct": 13.1484
+    }
+  ]
+}
