@@ -1,4 +1,4 @@
-# 溯源注入：把 _sourceId / _generatedBy / _generatedAt / _fieldNature 外層寫進 processed JSON
+# 溯源注入：把 _sourceId / _generatedBy / _fieldNature 外層寫進 processed JSON
 #
 # 用法：. "$PSScriptRoot/lib/provenance.ps1"  然後呼叫 Write-ProvenancedJson
 # 契約：openspec/changes/interactive-dashboard-mvp/design.md「資料形狀」節
@@ -52,10 +52,13 @@ function Write-ProvenancedJson {
 
   # ConvertTo-Json 會依插入順序輸出，用 ordered 讓外層欄位固定排在 data 之前，
   # 方便人工開檔時先看到溯源資訊。
+  # 刻意不寫入產生時間。轉檔是純函數：同一期別進去，同一串位元組出來——
+  # 排程刷新才能以「產出與版本庫現有檔案相同」判定不需提交。時間戳會讓每次重跑
+  # 都產生假差異，把「資料變了」與「今天重跑過」混為一談。
+  # 何時產生的由 git 歷史記錄，且不可篡改。
   $doc = [ordered]@{
     _sourceId    = $SourceId
     _generatedBy = $GeneratedBy
-    _generatedAt = (Get-Date -Format 'yyyy-MM-dd')
     _fieldNature = [ordered]@{}
   }
   foreach($f in ($FieldNature.Keys | Sort-Object)){ $doc._fieldNature[$f] = $FieldNature[$f] }

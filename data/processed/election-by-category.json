@@ -1,7 +1,6 @@
 {
   "_sourceId": "cec-votedata",
   "_generatedBy": "scripts/extract-cec-elprof.ps1",
-  "_generatedAt": "2026-08-10",
   "_fieldNature": {
     "人口數": "official-statistic",
     "年": "official-statistic",
