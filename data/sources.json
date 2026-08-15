@@ -288,8 +288,8 @@
       "reusable": "true",
       "api": true,
       "nature": "official-statistic",
-      "verification": "unverified",
-      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
+      "verification": "primary-source",
+      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得，轉檔時的加總自我驗證與變動幅度檢查均已通過。★【2026-08-15 人工交叉驗證通過】比對對象為原民會 115年7月月報附件「11507台閩縣市原住民族人口-按性別族別.xls」（RCRPC1F0，發布日 2026-08-14）：全國原住民合計 638,466、平地原住民 298,327、山地原住民 340,139 與本站逐一相符；連同 22 縣市 × (總計+16族+尚未申報) 共 440 格全數相同，無一格差異。⚠️【比對陷阱：同一頁有兩張族別表，只有一張能用】同頁另有「11507現住原住民人口數按族別及年齡統計表」，其全國總計為 638,498（多 32 人，且各族差異為雙向），原民會於該頁明白註記此表『非內政部戶政司產出之報表，僅參考用』——它是原民會自行加工的參考表，不可用於交叉驗證。日後核對務必使用 RCRPC1F0 的『按性別族別』XLS。另註：以 ODRP013 API 於 2026-08-15 重新取得 11507，總數仍為 638,466，確認該期快照發布後未經回溯更正。",
       "sha256": {
         "moi-odrp013-population-by-indigenous-status-11507.json": "c675fa3a564b02bc4e64b3b312a120e9f2ba47a3ecd31e0165d8c0d094111f52"
       },
@@ -330,8 +330,8 @@
       "reusable": "true",
       "api": true,
       "nature": "official-statistic",
-      "verification": "unverified",
-      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
+      "verification": "primary-source",
+      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得，轉檔時的加總自我驗證與變動幅度檢查均已通過。★【2026-08-15 人工交叉驗證通過】與原民會 115年7月月報附件「11507台閩縣市原住民族人口-按性別族別.xls」（RCRPC1F0，發布日 2026-08-14）逐格比對：22 縣市 × (總計+16族+尚未申報) 共 440 格全數相同，無一格差異；全國各族亦相符（阿美 238,027、泰雅 104,052、排灣 116,004、太魯閣 37,477、尚未申報 7,727 等）。⚠️ 比對陷阱與 moi-odrp013-11507 同：同頁的「按族別及年齡統計表」是原民會自行加工的參考表（該頁註明『非內政部戶政司產出之報表，僅參考用』），其全國總計 638,498 與本表差 32 人，不可用於交叉驗證。★★ 該月報族別表仍為 16 族 + 尚未申報，【無任何平埔欄位】——佐證本期 indigenous_pingpu 為 0 是『尚無登記』的事實，見 gap-pingpu-household-population。",
       "sha256": {
         "moi-odrp018-population-by-tribe-11507.json": "2f46463bb4cbd749625ec27795f1f1492e44d3cd25346e43c9196c1e8b2c1621"
       },
