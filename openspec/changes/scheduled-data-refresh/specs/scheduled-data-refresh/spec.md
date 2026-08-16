@@ -71,14 +71,45 @@ The system SHALL cause the site to be rebuilt and republished after a refresh co
 
 ### Requirement: The refresh job can be run manually for a chosen period
 
-The system SHALL allow an operator to start the refresh manually and to specify the period to convert, so that a rejected period can be released after human review and so that any published period can be rebuilt.
+The system SHALL allow an operator to start the refresh manually and to specify the period to convert, so that any published period can be rebuilt. Specifying a period SHALL skip only the discovery step; every validation SHALL still apply. Releasing a period that the change-band check rejected is a separate capability, defined by the named-override requirement below, and SHALL NOT be achievable by re-running the same period.
 
 #### Scenario: Operator rebuilds a specific period
 
 - **WHEN** an operator starts the job with an explicit period
 - **THEN** that period is converted instead of the discovered one, and the same validations apply
 
+#### Scenario: Re-running a rejected period without an override
+
+- **WHEN** an operator re-runs a period that the change-band check rejected, supplying no override
+- **THEN** the job fails again for the same reason, and no commit is created
+
 #### Scenario: Rebuild of the current period is idempotent
 
 - **WHEN** an operator rebuilds the period already recorded in the registry
 - **THEN** the produced data files are byte-for-byte identical to those in the repository and no commit is created
+
+### Requirement: A legitimate large change is released by a named human override
+
+The system SHALL provide a way for an operator to release a period whose national indigenous total falls outside the accepted change band, and that way SHALL require both an explicit acceptance flag and a non-empty stated reason. The override SHALL be available only on a manually started run and SHALL NOT be reachable from the scheduled run. When an override is in effect, the change-band comparison SHALL still be computed and reported, and the stated reason SHALL be recorded in the resulting commit message so that the decision remains attributable in version history. The system SHALL NOT offer any way to raise or disable the band itself.
+
+This capability exists because a legitimate large change is expected: registration of the newly recognised Siraya people opens in August 2026, and a first cohort anywhere near the scale publicly attributed to academic estimates would move the national total by several percent in a single period.
+
+#### Scenario: Operator releases a rejected period
+
+- **WHEN** an operator manually starts the job for a rejected period, supplying both the acceptance flag and a reason
+- **THEN** the conversion completes, the observed change percentage is reported, and the commit message contains the stated reason
+
+#### Scenario: Acceptance without a reason is refused
+
+- **WHEN** an operator supplies the acceptance flag but no reason, or a reason but no acceptance flag
+- **THEN** the job fails before conversion, and no data files are produced
+
+#### Scenario: The scheduled run cannot override
+
+- **WHEN** the scheduled run encounters a period outside the accepted band
+- **THEN** it fails without committing, and no configuration of the schedule can grant it the override
+
+#### Scenario: All other validations still apply under override
+
+- **WHEN** a period is released by override but its own totals do not reconcile
+- **THEN** the conversion self-validation still aborts the job and no commit is created

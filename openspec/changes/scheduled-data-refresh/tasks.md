@@ -20,16 +20,26 @@
 
 ## 4. 排程刷新流程
 
-- [ ] 4.1 新增 `.github/workflows/refresh-data.yml` 的期別探測：每日於 UTC 21:00 執行，自 `data/sources.json` 記載的期別次月起逐月查詢至當月，依回應的 `responseMessage` 與資料列數判定是否已發布，取最新一個有資料的期別；全部查無資料時正常結束、不提交、不觸發部署；網路錯誤或無法歸類的回應則使流程失敗。驗證：以 workflow_dispatch 手動觸發一次，確認流程在目前（無新期別）狀態下綠燈結束且未產生 commit；暫時把記載期別改為 11505 後觸發，確認探測結果為 11506。涵蓋 Requirement: A scheduled job discovers newly published source periods；實作 design 決策一：每日探測，以 ODRP 的回應語意判斷是否已發布。
+- [x] 4.1 新增 `.github/workflows/refresh-data.yml` 的期別探測：每日於 UTC 21:00 執行，自 `data/sources.json` 記載的期別次月起逐月查詢至當月，依回應的 `responseMessage` 與資料列數判定是否已發布，取最新一個有資料的期別；全部查無資料時正常結束、不提交、不觸發部署；網路錯誤或無法歸類的回應則使流程失敗。驗證：以 workflow_dispatch 手動觸發一次，確認流程在目前（無新期別）狀態下綠燈結束且未產生 commit；暫時把記載期別改為 11505 後觸發，確認探測結果為 11506。涵蓋 Requirement: A scheduled job discovers newly published source periods；實作 design 決策一：每日探測，以 ODRP 的回應語意判斷是否已發布。
 
-- [ ] 4.2 流程的提交規則：探測到新期別後執行轉檔，通過既有自我驗證與 2.1 的幅度檢查才提交重新產生的 `data/processed/` 檔案與更新後的 `data/sources.json` 期別記錄；任一驗證失敗即流程失敗、不提交、版本庫維持原狀。權限限於 `contents: write` 與 `actions: write`。驗證：在分支上以刻意失敗的轉檔觸發，確認流程紅燈且無 commit；成功路徑則確認 commit 只含 `data/` 之下的檔案。涵蓋 Requirement: Refreshed data is committed only after validation passes；實作 design 決策六。
+- [x] 4.2 流程的提交規則：探測到新期別後執行轉檔，通過既有自我驗證與 2.1 的幅度檢查才提交重新產生的 `data/processed/` 檔案與更新後的 `data/sources.json` 期別記錄；任一驗證失敗即流程失敗、不提交、版本庫維持原狀。權限限於 `contents: write` 與 `actions: write`。驗證：在分支上以刻意失敗的轉檔觸發，確認流程紅燈且無 commit；成功路徑則確認 commit 只含 `data/` 之下的檔案。涵蓋 Requirement: Refreshed data is committed only after validation passes；實作 design 決策六。
 
-- [ ] 4.3 提交後觸發發佈：流程在提交成功後以 workflow_dispatch 明確呼叫既有的 `Deploy to GitHub Pages`，不在本流程內複製組建或發佈邏輯；未提交時不觸發。驗證：成功路徑確認部署流程被啟動，並以瀏覽器開啟 Pages 網址確認頁面上的基準日已變更——不以流程顯示成功為唯一判準；無新期別的執行則確認沒有新的部署紀錄。涵蓋 Requirement: A successful refresh republishes the site；實作 design 決策二：以 workflow_dispatch 觸發既有的部署流程，不複製部署邏輯。
+- [x] 4.3 提交後觸發發佈：流程在提交成功後以 workflow_dispatch 明確呼叫既有的 `Deploy to GitHub Pages`，不在本流程內複製組建或發佈邏輯；未提交時不觸發。驗證：成功路徑確認部署流程被啟動，並以瀏覽器開啟 Pages 網址確認頁面上的基準日已變更——不以流程顯示成功為唯一判準；無新期別的執行則確認沒有新的部署紀錄。涵蓋 Requirement: A successful refresh republishes the site；實作 design 決策二：以 workflow_dispatch 觸發既有的部署流程，不複製部署邏輯。
 
-- [ ] 4.4 手動指定期別：流程提供 workflow_dispatch 輸入以指定要轉檔的期別，指定時略過探測並直接轉該期，其餘驗證一律照常套用；重跑版本庫現有期別時產出必須與既有檔案逐位元組相同且不產生 commit。驗證：以輸入 11506 觸發，確認 `git status` 在轉檔後為乾淨、流程綠燈且無 commit。涵蓋 Requirement: The refresh job can be run manually for a chosen period。
+- [x] 4.4 手動指定期別：流程提供 workflow_dispatch 輸入以指定要轉檔的期別，指定時略過探測並直接轉該期，其餘驗證一律照常套用；重跑版本庫現有期別時產出必須與既有檔案逐位元組相同且不產生 commit。驗證：以輸入 11506 觸發，確認 `git status` 在轉檔後為乾淨、流程綠燈且無 commit。涵蓋 Requirement: The refresh job can be run manually for a chosen period。
 
 ## 5. 文件與端到端驗收
 
 - [x] 5.1 README 補上資料更新一節：說明排程時間與探測邏輯、手動指定期別的觸發方式、幅度檢查被擋下時的處置步驟、以及回歸測試的執行指令；並說明刷新流程需要 `contents: write` 與 `actions: write`，與 `deploy.yml` 的唯讀權限不同。驗證：依 README 的指令從乾淨狀態逐條照抄執行，確認每一條都可直接執行且結果與文件所述相符。
 
-- [ ] 5.2 端到端驗收：把 `data/sources.json` 的期別暫時改為 11505 並觸發刷新流程，確認完整走完探測、轉檔、驗證、提交、部署，且線上頁面的基準日、人口數字與平埔族群狀態三者同時更新；驗收後把期別還原。驗證：以瀏覽器開啟 Pages 網址逐項確認上述三者，並確認 `data/processed/` 的 `_sourceId` 與頁面顯示一致。
+- [ ] 5.2 端到端驗收：把 `data/sources.json` 的期別暫時改為 11505 並觸發刷新流程，確認完整走完探測、轉檔、驗證、提交、部署，且線上頁面的基準日、人口數字與平埔族群狀態三者同時更新；驗收後把期別還原。驗證：以瀏覽器開啟 Pages 網址逐項確認上述三者，並確認 `data/processed/` 的 `_sourceId` 與頁面顯示一致。**（2026-08-15 進度：正常路徑已由一次真實刷新完成驗收——排程於 2026-08-12 自行探測到 11507、轉檔、驗證、提交 072ef82 並觸發部署，線上頁面三處基準日均為 2026-07、人口 638,466、平埔顯示「尚無登記」；資料另經與原民會月報 440 格逐格比對相符。尚缺第 6 組的放行路徑驗收，故本項維持未完成。）**
+
+## 6. 幅度檢查的具名放行
+
+- [ ] 6.1 `scripts/build-population.ps1` 新增 `-AcceptLargeChange`（開關）與 `-OverrideReason <string>` 兩個參數：兩者必須同時提供，只給其一即以非零狀態碼在轉檔前中止並在 stderr 指出缺少哪一個，且不產出任何檔案；同時提供時，幅度檢查照常計算並輸出前後數值與變動百分比，但不中止。腳本不得提供調整或關閉 ±1% 門檻的任何參數。驗證：以現有 11507 資料搭配人工調整為 +7.8% 的樣本執行三次——只給旗標、只給理由、兩者皆給——確認前兩次非零退出且 `data/processed/` 無變動，第三次成功且 stdout 含變動百分比。涵蓋 Requirement: A legitimate large change is released by a named human override；實作 design 決策九：幅度檢查的放行是「具名的人工覆寫」，不是關閉檢查。
+
+- [ ] 6.2 `.github/workflows/refresh-data.yml` 接上放行輸入：新增 `accept_large_change`（boolean）與 `override_reason`（string）兩個 workflow_dispatch 輸入，僅在手動觸發時傳入轉檔腳本；`schedule` 觸發的執行路徑不得傳入這兩個值，且流程須在傳入放行參數時於 commit 訊息中寫入該理由與實際變動百分比。驗證：以排程觸發路徑（`github.event_name == 'schedule'`）檢視流程定義確認未帶入放行參數；手動觸發一次帶理由的放行並確認產生的 commit 訊息含該理由字串。涵蓋 Requirement: A legitimate large change is released by a named human override；實作 design 決策九：幅度檢查的放行是「具名的人工覆寫」，不是關閉檢查。
+
+- [ ] 6.3 更正 README「幅度檢查被擋下時」的處置步驟：現行第 3 步寫「以手動指定期別重新觸發該期」，但手動指定期別只跳過探測、不跳過驗證，照做只會以相同方式再失敗一次。改為說明具名放行的實際指令與 workflow 輸入、兩個參數必須並用、排程無法自我放行、以及門檻不可調整；並補上西拉雅族登記開放後首個非零期別預期會觸發此路徑的說明。驗證：依修改後的 README 從乾淨狀態照抄執行放行流程，確認每一條指令可直接執行且結果與文件所述相符。涵蓋 Requirement: A legitimate large change is released by a named human override。
+
+- [ ] 6.4 回歸測試涵蓋放行路徑：於 `tests/run-regression.ps1` 新增斷言——超出 ±1% 且未放行時中止且無產出、只給旗標或只給理由時中止且無產出、兩者皆給時完成轉檔；並斷言族別加總不符的樣本在放行狀態下【仍然】中止，確認放行只鬆綁幅度檢查而不鬆綁自我驗證。驗證：執行 `pwsh tests/run-regression.ps1` 狀態碼為 0；移除腳本中的放行參數檢查後，此測試必須轉為失敗。涵蓋 Requirement: A legitimate large change is released by a named human override；實作 design 決策九：幅度檢查的放行是「具名的人工覆寫」，不是關閉檢查。
