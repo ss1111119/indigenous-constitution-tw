@@ -47,7 +47,11 @@ function Assert-That {
 
 # 建沙箱、跑轉檔、回報結果。呼叫端負責斷言。
 function Invoke-ConversionInSandbox {
-  param([Parameter(Mandatory)][string]$Case)
+  param(
+    [Parameter(Mandatory)][string]$Case,
+    # 附加給 build-population.ps1 的參數（放行路徑用）。預設為空，既有案例行為不變。
+    [string[]]$ExtraArgs = @()
+  )
 
   $caseDir = Join-Path $fixtures $Case
   if(-not (Test-Path $caseDir)){ throw "找不到樣本目錄 $caseDir" }
@@ -71,8 +75,9 @@ function Invoke-ConversionInSandbox {
 
   $outLog = Join-Path $sandbox 'stdout.log'
   $errLog = Join-Path $sandbox 'stderr.log'
+  $argList = @('-NoProfile', '-File', (Join-Path $sandbox 'scripts/build-population.ps1'), '-Period', $Period) + $ExtraArgs
   $proc = Start-Process -FilePath 'pwsh' -NoNewWindow -Wait -PassThru `
-    -ArgumentList '-NoProfile', '-File', (Join-Path $sandbox 'scripts/build-population.ps1'), '-Period', $Period `
+    -ArgumentList $argList `
     -RedirectStandardOutput $outLog -RedirectStandardError $errLog
 
   $processed = Join-Path $sandbox 'data/processed'
@@ -81,8 +86,9 @@ function Invoke-ConversionInSandbox {
     Sandbox  = $sandbox
     Seeded   = (Test-Path $prevDir) ? @(Get-ChildItem $prevDir -Filter *.json | ForEach-Object { $_.Name }) : @()
     ExitCode = $proc.ExitCode
-    Stdout   = (Test-Path $outLog) ? (Get-Content $outLog -Raw -Encoding UTF8) : ''
-    Stderr   = (Test-Path $errLog) ? (Get-Content $errLog -Raw -Encoding UTF8) : ''
+    # 空檔時 Get-Content -Raw 回 $null，會讓呼叫端的 .Trim() 炸掉——一律正規化為空字串。
+    Stdout   = (Test-Path $outLog) ? ((Get-Content $outLog -Raw -Encoding UTF8) ?? '') : ''
+    Stderr   = (Test-Path $errLog) ? ((Get-Content $errLog -Raw -Encoding UTF8) ?? '') : ''
     Outputs  = (Test-Path $processed) ? @(Get-ChildItem $processed -Filter *.json | ForEach-Object { $_.Name }) : @()
   }
 }
@@ -216,6 +222,75 @@ foreach($fc in $failureCases){
 
   Remove-Sandbox $f
 }
+
+# --- 幅度檢查的具名放行 ---
+# 放行不是「關掉檢查」，是「這一次、由某人、基於某個理由放行」。故兩個參數必須並用：
+# 只給其一都必須在轉檔前中止，否則放行就退化成一個容易誤按的開關。
+# 全部以 amplitude-jump 樣本（+1.16%，超出 ±1%）為輸入——它在無放行時必定被擋下。
+$overrideReason = '西拉雅族首批身分登記，已與原民會月報人工核對'
+
+Write-Host ''
+Write-Host 'amplitude-jump 樣本 + 只給 -AcceptLargeChange（缺 reason）'
+$o1 = Invoke-ConversionInSandbox -Case 'amplitude-jump' -ExtraArgs @('-AcceptLargeChange')
+Assert-That -Name 'override 缺 reason：轉檔以非零狀態碼中止' -Condition ($o1.ExitCode -ne 0) `
+  -Detail "實際狀態碼 $($o1.ExitCode)。stderr: $($o1.Stderr.Trim())"
+$produced1 = @($o1.Outputs | Where-Object { $o1.Seeded -notcontains $_ })
+Assert-That -Name 'override 缺 reason：未留下任何產出檔案' -Condition ($produced1.Count -eq 0) `
+  -Detail "實際產出：$($produced1 -join '、')"
+Assert-That -Name 'override 缺 reason：訊息指出缺少 OverrideReason' `
+  -Condition ("$($o1.Stdout)`n$($o1.Stderr)" -match 'OverrideReason') `
+  -Detail "實際輸出：$("$($o1.Stdout)`n$($o1.Stderr)".Trim())"
+Remove-Sandbox $o1
+
+Write-Host ''
+Write-Host 'amplitude-jump 樣本 + 只給 -OverrideReason（缺旗標）'
+$o2 = Invoke-ConversionInSandbox -Case 'amplitude-jump' -ExtraArgs @('-OverrideReason', $overrideReason)
+Assert-That -Name 'override 缺旗標：轉檔以非零狀態碼中止' -Condition ($o2.ExitCode -ne 0) `
+  -Detail "實際狀態碼 $($o2.ExitCode)。stderr: $($o2.Stderr.Trim())"
+$produced2 = @($o2.Outputs | Where-Object { $o2.Seeded -notcontains $_ })
+Assert-That -Name 'override 缺旗標：未留下任何產出檔案' -Condition ($produced2.Count -eq 0) `
+  -Detail "實際產出：$($produced2 -join '、')"
+Assert-That -Name 'override 缺旗標：訊息指出缺少 AcceptLargeChange' `
+  -Condition ("$($o2.Stdout)`n$($o2.Stderr)" -match 'AcceptLargeChange') `
+  -Detail "實際輸出：$("$($o2.Stdout)`n$($o2.Stderr)".Trim())"
+Remove-Sandbox $o2
+
+Write-Host ''
+Write-Host 'amplitude-jump 樣本 + 旗標與 reason 並用（應放行）'
+$o3 = Invoke-ConversionInSandbox -Case 'amplitude-jump' -ExtraArgs @('-AcceptLargeChange', '-OverrideReason', $overrideReason)
+Assert-That -Name 'override 並用：轉檔以狀態碼 0 完成' -Condition ($o3.ExitCode -eq 0) `
+  -Detail "實際狀態碼 $($o3.ExitCode)。stderr: $($o3.Stderr.Trim())"
+$expectedOverride = @('population-by-county.json', 'population-by-township.json',
+                      'tribes-by-county.json', 'tribes-by-township.json')
+$missingOverride = @($expectedOverride | Where-Object { $o3.Outputs -notcontains $_ })
+Assert-That -Name 'override 並用：四份 processed JSON 全數產出' -Condition ($missingOverride.Count -eq 0) `
+  -Detail "缺少：$($missingOverride -join '、')"
+# 放行不是靜默通過：變動幅度仍須被算出並回報，否則沒有人知道放行了多大的變動。
+Assert-That -Name 'override 並用：輸出仍指出變動百分比 1.16%' `
+  -Condition ($o3.Stdout -match '1\.16') -Detail "stdout: $($o3.Stdout.Trim())"
+# reason 須出現在輸出中，供 refresh-data.yml 寫進 commit 訊息（任務 6.2）。
+Assert-That -Name 'override 並用：輸出含放行理由原文' `
+  -Condition ($o3.Stdout -match [regex]::Escape($overrideReason)) `
+  -Detail "stdout: $($o3.Stdout.Trim())"
+Remove-Sandbox $o3
+
+# 放行只鬆綁幅度檢查這一道門檻，不鬆綁加總自我驗證。少了這項，
+# 「放行」與「跳過所有檢查」在測試上無從區分——而後者會讓內部矛盾的資料自動上線。
+# 本項在正確實作下一寫即綠；它的價值在退化時轉紅，故驗證方式是負向對照：
+# 暫時讓放行也繞過自我驗證，此項必須轉為失敗。
+Write-Host ''
+Write-Host 'tribe-sum-mismatch 樣本 + 放行參數（自我驗證仍須中止）'
+$o4 = Invoke-ConversionInSandbox -Case 'tribe-sum-mismatch' `
+  -ExtraArgs @('-AcceptLargeChange', '-OverrideReason', $overrideReason)
+Assert-That -Name '放行不鬆綁自我驗證：轉檔仍以非零狀態碼中止' -Condition ($o4.ExitCode -ne 0) `
+  -Detail "實際狀態碼 $($o4.ExitCode)。放行不得讓族別加總不符的資料通過。stderr: $($o4.Stderr.Trim())"
+$produced4 = @($o4.Outputs | Where-Object { $o4.Seeded -notcontains $_ })
+Assert-That -Name '放行不鬆綁自我驗證：未留下任何產出檔案' -Condition ($produced4.Count -eq 0) `
+  -Detail "實際產出：$($produced4 -join '、')"
+Assert-That -Name '放行不鬆綁自我驗證：中止原因為「自我驗證失敗」而非幅度檢查' `
+  -Condition ("$($o4.Stdout)`n$($o4.Stderr)" -match '自我驗證失敗') `
+  -Detail "實際輸出：$("$($o4.Stdout)`n$($o4.Stderr)".Trim())"
+Remove-Sandbox $o4
 
 # --- 總結 ---
 Write-Host ''

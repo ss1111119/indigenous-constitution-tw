@@ -19,7 +19,12 @@
 #   3. district_code 為 11 碼 = 縣市 5 + 鄉鎮 3 + 村里 3。
 
 param(
-  [string]$Period = '11506'
+  [string]$Period = '11506',
+
+  # 幅度檢查的具名放行。兩者必須並用——見 design 決策九。
+  # 刻意不提供調整或關閉 ±1% 門檻的參數：門檻調高一次，下一次數量級錯誤就過得去了。
+  [switch]$AcceptLargeChange,
+  [string]$OverrideReason
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,6 +32,18 @@ $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/lib/provenance.ps1"
 
 $repo = (Resolve-Path "$PSScriptRoot/..").Path
+
+# 放行參數的完整性檢查，置於一切工作之前——只給其一是操作失誤，
+# 讓它跑完整趟再失敗只會浪費一次下載，且容易被誤讀成「資料有問題」。
+$hasReason = -not [string]::IsNullOrWhiteSpace($OverrideReason)
+if($AcceptLargeChange -and -not $hasReason){
+  [Console]::Error.WriteLine('放行參數不完整：指定了 -AcceptLargeChange 但缺少 -OverrideReason。放行必須具名，請以 -OverrideReason "<理由>" 說明為何此變動為真實。')
+  exit 2
+}
+if($hasReason -and -not $AcceptLargeChange){
+  [Console]::Error.WriteLine('放行參數不完整：指定了 -OverrideReason 但缺少 -AcceptLargeChange。理由本身不構成放行，兩者必須並用。')
+  exit 2
+}
 
 # ODRP018 主清單的族別 stem，順序即輸出順序。
 # 前 16 個為現行認定民族，後 10 個為平埔族群（官方 schema 已預留欄位，2026-06 時值皆為 0），
@@ -318,14 +335,23 @@ if(Test-Path $prevPath){
     $deltaPct = ($natInd - $prevInd) * 100 / $prevInd
     $shown = [math]::Round($deltaPct, 4)
     if([math]::Abs($deltaPct) -gt 1){
-      [Console]::Error.WriteLine(
-        "幅度檢查失敗：全國原住民總人口由 $prevInd（$($prev._sourceId)）變為 $natInd（moi-odrp013-$Period），" +
-        "變動 $shown%，超過 ±1%。未產生任何輸出檔。")
-      [Console]::Error.WriteLine(
-        '若已人工確認此變動為真實，請以刷新流程的手動指定期別重跑，或先行更新前一期基準。')
-      throw "變動幅度檢查失敗（$shown%），中止。"
+      if($AcceptLargeChange){
+        # 放行不是靜默通過：變動幅度照常算出並回報，理由一併輸出供刷新流程
+        # 寫進 commit 訊息（見 design 決策九）。放行只鬆綁這一道門檻，
+        # 上面的加總自我驗證已經跑過，且不受此影響。
+        Write-Host "  幅度檢查【已具名放行】：原住民總人口 $prevInd → $natInd（$shown%，超過門檻 ±1%）"
+        Write-Host "  放行理由：$OverrideReason"
+      } else {
+        [Console]::Error.WriteLine(
+          "幅度檢查失敗：全國原住民總人口由 $prevInd（$($prev._sourceId)）變為 $natInd（moi-odrp013-$Period），" +
+          "變動 $shown%，超過 ±1%。未產生任何輸出檔。")
+        [Console]::Error.WriteLine(
+          '若已人工確認此變動為真實，請以 -AcceptLargeChange 搭配 -OverrideReason "<理由>" 重跑；兩者必須並用，門檻本身不可調整。')
+        throw "變動幅度檢查失敗（$shown%），中止。"
+      }
+    } else {
+      Write-Host "  幅度檢查通過：原住民總人口 $prevInd → $natInd（$shown%，門檻 ±1%）"
     }
-    Write-Host "  幅度檢查通過：原住民總人口 $prevInd → $natInd（$shown%，門檻 ±1%）"
   }
 } else {
   Write-Host '  幅度檢查略過：找不到 data/processed/population-by-county.json（首次建置）'
