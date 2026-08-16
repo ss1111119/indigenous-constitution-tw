@@ -12,6 +12,10 @@
 #
 # 失敗即紅燈，不靜默略過：排程長期無人看管，紅燈是唯一會被注意到的訊號。
 # 唯一「沒事發生」的正常結局是探測不到新期別。
+#
+# 變動幅度檢查的放行（決策九）只在手動觸發時可用，且必須同時給定「勾選放行」與
+# 「放行理由」；理由會寫進 commit 訊息。排程觸發一律不帶放行參數——這是刻意的：
+# 若排程能自我放行，幅度檢查就擋不住任何東西。門檻本身沒有調整的入口。
 
 name: Refresh population data
 
@@ -24,6 +28,17 @@ on:
     inputs:
       period:
         description: '指定期別（民國年月，如 11507）。留空則自動探測。'
+        required: false
+        type: string
+      # 放行只存在於 workflow_dispatch，schedule 沒有這兩個輸入可用——這是
+      # 「排程不得自我放行」的第一道結構性保證，下面的 Resolve override 是第二道。
+      accept_large_change:
+        description: '放行超過 ±1% 的變動（須同時填寫放行理由）。僅在人工確認變動為真實時使用。'
+        required: false
+        type: boolean
+        default: false
+      override_reason:
+        description: '放行理由（accept_large_change 勾選時必填）。將寫入 commit 訊息。'
         required: false
         type: string
 
@@ -76,6 +91,48 @@ jobs:
         if: steps.period.outputs.period == ''
         run: echo '沒有比版本庫記載更新的期別，正常結束：不提交、不部署。'
 
+      # 放行參數只在手動觸發時成立（design 決策九）。排程觸發一律不帶——排程長期
+      # 無人看管，若它能自我放行，幅度檢查這道防線就形同虛設。這裡明確以 event_name
+      # 判斷而非只依賴「schedule 沒有 inputs」，是為了讓意圖寫在流程裡而非隱含在
+      # GitHub 的行為中；日後若新增其他觸發方式，預設仍是不放行。
+      # 兩個參數的並用檢查在此先做一次，好在下載與轉檔之前就擋下操作失誤——
+      # 轉檔腳本自己也會檢查，那是實際的把關，這裡只是提早失敗。
+      - name: Resolve override
+        id: override
+        shell: pwsh
+        env:
+          EVENT_NAME:   ${{ github.event_name }}
+          INPUT_ACCEPT: ${{ inputs.accept_large_change }}
+          INPUT_REASON: ${{ inputs.override_reason }}
+        run: |
+          if($env:EVENT_NAME -ne 'workflow_dispatch'){
+            Write-Host "觸發方式為 $env:EVENT_NAME，不套用任何放行參數。"
+            'accept=false' >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+
+          $accept = "$env:INPUT_ACCEPT" -eq 'true'
+          $reason = "$env:INPUT_REASON".Trim()
+
+          if($accept -and -not $reason){
+            throw '放行參數不完整：勾選了 accept_large_change 但未填 override_reason。放行必須具名。'
+          }
+          if($reason -and -not $accept){
+            throw '放行參數不完整：填了 override_reason 但未勾選 accept_large_change。理由本身不構成放行。'
+          }
+
+          if($accept){
+            Write-Host "已指定具名放行，理由：$reason"
+            'accept=true' >> $env:GITHUB_OUTPUT
+            # 理由可能含換行，用多行輸出格式；分隔符取不會出現在人寫的理由中的字串。
+            "reason<<__REASON_EOF__"  >> $env:GITHUB_OUTPUT
+            $reason                   >> $env:GITHUB_OUTPUT
+            '__REASON_EOF__'          >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host '未指定放行，幅度檢查照常擋下超過 ±1% 的變動。'
+            'accept=false' >> $env:GITHUB_OUTPUT
+          }
+
       # --- 以下步驟只在有期別可轉時執行 ---
 
       # 登記必須在轉檔之前：轉檔腳本會拒絕未登記的 sourceId。
@@ -98,10 +155,38 @@ jobs:
 
       # 轉檔內含加總自我驗證與變動幅度檢查。任一未過即以非零狀態碼中止且不產出檔案，
       # job 隨之失敗，後面的提交與部署都不會執行——絕不把異常數字推上線。
+      # 放行時要把「放行了多大的變動」記進 commit 訊息，故需取回腳本算出的百分比。
+      # Write-Host 走的是資訊串流，用 6>&1 併進成功串流才抓得到；抓到後照原樣印出，
+      # 流程紀錄的可讀性不變。
       - name: Convert
+        id: convert
         if: steps.period.outputs.period != ''
         shell: pwsh
-        run: ./scripts/build-population.ps1 -Period ${{ steps.period.outputs.period }}
+        env:
+          OVERRIDE_ACCEPT: ${{ steps.override.outputs.accept }}
+          OVERRIDE_REASON: ${{ steps.override.outputs.reason }}
+        run: |
+          # 用雜湊表展開而非陣列：陣列展開不會讓 [switch] 正確綁定，
+          # -AcceptLargeChange 會被吃掉，結果是「給了理由卻沒放行」而中止。
+          $buildArgs = @{ Period = '${{ steps.period.outputs.period }}' }
+          if($env:OVERRIDE_ACCEPT -eq 'true'){
+            $buildArgs['AcceptLargeChange'] = $true
+            $buildArgs['OverrideReason']    = $env:OVERRIDE_REASON
+          }
+
+          $output = & ./scripts/build-population.ps1 @buildArgs 6>&1
+          $output | ForEach-Object { Write-Host $_ }
+
+          # 只有真的被放行時才有百分比可記；變動落在門檻內時不留放行註記，
+          # 否則 commit 訊息會宣稱一件沒有發生的事。
+          $released = $output | Where-Object { "$_" -match '幅度檢查【已具名放行】' } | Select-Object -First 1
+          if($released){
+            if("$released" -match '（([-\d.]+)%'){
+              "delta_pct=$($Matches[1])" >> $env:GITHUB_OUTPUT
+            } else {
+              throw "放行訊息中找不到變動百分比，無法據實寫入 commit 訊息：$released"
+            }
+          }
 
       # 回歸測試在此再跑一次：轉檔腳本是在 runner 上執行的，本機綠燈不等於這裡綠燈。
       - name: Regression tests
@@ -114,6 +199,9 @@ jobs:
       - name: Commit data
         id: commit
         if: steps.period.outputs.period != ''
+        env:
+          OVERRIDE_REASON: ${{ steps.override.outputs.reason }}
+          OVERRIDE_DELTA:  ${{ steps.convert.outputs.delta_pct }}
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -122,11 +210,22 @@ jobs:
             echo '產出與版本庫現有檔案相同，不提交。'
             echo 'committed=false' >> "$GITHUB_OUTPUT"
           else
-            git commit -m "data: 更新至期別 ${{ steps.period.outputs.period }}
+            MSG="data: 更新至期別 ${{ steps.period.outputs.period }}
 
           由 .github/workflows/refresh-data.yml 自動提交。
           加總自我驗證與變動幅度檢查均已通過；來源記錄的 verification 為 unverified，
           尚未經人工與原民會月報交叉驗證。"
+
+            # 放行過的期別必須在 git 歷史裡自帶理由——三個月後沒有人能從數字本身
+            # 判斷那次跳動是真實變動還是沒人看的意外，寫在這裡是唯一留得住的地方。
+            if [ -n "$OVERRIDE_DELTA" ]; then
+              MSG="${MSG}
+
+          ⚠️ 本期的變動幅度檢查由人工具名放行：變動 ${OVERRIDE_DELTA}%，超過 ±1% 門檻。
+          放行理由：${OVERRIDE_REASON}"
+            fi
+
+            git commit -m "$MSG"
             git push
             echo 'committed=true' >> "$GITHUB_OUTPUT"
           fi
