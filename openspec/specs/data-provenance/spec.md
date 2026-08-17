@@ -182,3 +182,133 @@ code:
   - README.md
   - data/raw/moi-odrp018-population-by-tribe-11506.json
 -->
+
+---
+### Requirement: The displayed baseline period is derived from the data
+
+The interface SHALL derive every statement of the data's baseline period from the loaded dataset's recorded source identifier resolved against the source registry, and SHALL NOT hold that period as fixed prose in the page markup. The baseline period SHALL remain visible when scripting is disabled.
+
+#### Scenario: Baseline period follows the data
+
+- **WHEN** the published dataset advances to a newer period
+- **THEN** every place the page states the baseline period reflects the newer period without an edit to the page's prose
+
+#### Scenario: Baseline period without scripting
+
+- **WHEN** the page is opened with scripting disabled
+- **THEN** the baseline period is still stated on the page
+
+#### Scenario: Source identifier has no registry entry
+
+- **WHEN** the loaded dataset names a source identifier that the registry does not contain
+- **THEN** the publish build fails rather than emitting a page with an unresolved or blank period
+
+
+<!-- @trace
+source: scheduled-data-refresh
+updated: 2026-08-17
+code:
+  - data/processed/population-by-county.json
+  - scripts/build-site.py
+  - scripts/build-population.ps1
+  - scripts/probe-odrp-period.ps1
+  - tests/fixtures/pingpu-double-count/moi-odrp018-population-by-tribe-11506.json
+  - tests/fixtures/success/moi-odrp018-population-by-tribe-11506.json
+  - site/index.html
+  - scripts/lib/odrp.py
+  - data/processed/tribes-by-county.json
+  - tests/fixtures/amplitude-jump/moi-odrp013-population-by-indigenous-status-11506.json
+  - tests/fixtures/tribe-sum-mismatch/moi-odrp013-population-by-indigenous-status-11506.json
+  - data/processed/land-ownership-by-county.json
+  - tests/fixtures/amplitude-jump/moi-odrp018-population-by-tribe-11506.json
+  - tests/run-regression.ps1
+  - scripts/lib/provenance.ps1
+  - data/raw/moi-odrp018-population-by-tribe-11506.json
+  - data/processed/legislative-representation.json
+  - site/js/panel-population.js
+  - data/processed/population-by-township.json
+  - tests/fixtures/success/previous/population-by-county.json
+  - scripts/register-period.py
+  - scripts/fetch-raw.py
+  - docs/feasibility-study.md
+  - tests/fixtures/amplitude-jump/previous/population-by-county.json
+  - data/raw/moi-odrp013-population-by-indigenous-status-11506.json
+  - data/sources.json
+  - tests/fixtures/pingpu-double-count/moi-odrp013-population-by-indigenous-status-11506.json
+  - tests/fixtures/success/moi-odrp013-population-by-indigenous-status-11506.json
+  - tests/fixtures/tribe-sum-mismatch/moi-odrp018-population-by-tribe-11506.json
+  - README.md
+  - site/js/provenance.js
+  - .github/workflows/refresh-data.yml
+  - data/processed/tribes-by-township.json
+  - data/processed/land-ownership-national.json
+  - docs/segis-check.md
+  - data/processed/election-by-category.json
+-->
+
+---
+### Requirement: Data state is determined by the data, not by the calendar
+
+The interface SHALL select among the three rendering states from the content of the loaded dataset alone. The current date, the date a registration process opened, and any hard-coded flag SHALL NOT be used to decide which state is shown.
+
+#### Scenario: Registration has opened but the period predates it
+
+- **WHEN** a registration process has already opened in the real world while the loaded dataset is from an earlier period whose column holds zero
+- **THEN** the interface states that no registrations have occurred, because that is what the loaded data records
+
+#### Scenario: A non-zero value appears
+
+- **WHEN** the loaded dataset's plains indigenous column holds a value greater than zero
+- **THEN** the interface displays that value together with the period it belongs to, replacing the no-registrations phrasing
+
+##### Example: state selection inputs
+
+| Column present | Column value | Current date relative to opening | Rendered state |
+| -------------- | ------------ | -------------------------------- | -------------- |
+| no | not applicable | before | field did not exist |
+| no | not applicable | after | field did not exist |
+| yes | 0 | before | no registrations |
+| yes | 0 | after | no registrations |
+| yes | 51,204 | after | value shown with its period |
+
+<!-- @trace
+source: scheduled-data-refresh
+updated: 2026-08-17
+code:
+  - data/processed/population-by-county.json
+  - scripts/build-site.py
+  - scripts/build-population.ps1
+  - scripts/probe-odrp-period.ps1
+  - tests/fixtures/pingpu-double-count/moi-odrp018-population-by-tribe-11506.json
+  - tests/fixtures/success/moi-odrp018-population-by-tribe-11506.json
+  - site/index.html
+  - scripts/lib/odrp.py
+  - data/processed/tribes-by-county.json
+  - tests/fixtures/amplitude-jump/moi-odrp013-population-by-indigenous-status-11506.json
+  - tests/fixtures/tribe-sum-mismatch/moi-odrp013-population-by-indigenous-status-11506.json
+  - data/processed/land-ownership-by-county.json
+  - tests/fixtures/amplitude-jump/moi-odrp018-population-by-tribe-11506.json
+  - tests/run-regression.ps1
+  - scripts/lib/provenance.ps1
+  - data/raw/moi-odrp018-population-by-tribe-11506.json
+  - data/processed/legislative-representation.json
+  - site/js/panel-population.js
+  - data/processed/population-by-township.json
+  - tests/fixtures/success/previous/population-by-county.json
+  - scripts/register-period.py
+  - scripts/fetch-raw.py
+  - docs/feasibility-study.md
+  - tests/fixtures/amplitude-jump/previous/population-by-county.json
+  - data/raw/moi-odrp013-population-by-indigenous-status-11506.json
+  - data/sources.json
+  - tests/fixtures/pingpu-double-count/moi-odrp013-population-by-indigenous-status-11506.json
+  - tests/fixtures/success/moi-odrp013-population-by-indigenous-status-11506.json
+  - tests/fixtures/tribe-sum-mismatch/moi-odrp018-population-by-tribe-11506.json
+  - README.md
+  - site/js/provenance.js
+  - .github/workflows/refresh-data.yml
+  - data/processed/tribes-by-township.json
+  - data/processed/land-ownership-national.json
+  - docs/segis-check.md
+  - data/processed/election-by-category.json
+-->
