@@ -15,26 +15,40 @@ The simulator SHALL provide exactly three controls: a slider for the plains indi
 - **WHEN** the simulator renders
 - **THEN** the two sliders and the allocation-method choice are available
 
+---
 ### Requirement: Start from the status quo
 
-The simulator SHALL open with the plains population set to zero, reserved seats set to the current statutory number, and the allocation method set to reallocation within the fixed chamber size.
+The simulator SHALL open in a state that reproduces the official present figures: the plains population control set to the number of plains-indigenous people the loaded official statistics already count, reserved seats set to the current statutory number, and the allocation method set to reallocation within the fixed chamber size.
+
+The indigenous population the simulator computes SHALL NOT count any person twice. Because the official indigenous total already includes registered plains-indigenous people, the simulator SHALL derive its base by removing the counted plains-indigenous population before applying the control's value.
+
+The number of plains-indigenous people already counted SHALL be derived from the loaded data, and SHALL NOT be written into the interface as a constant.
 
 #### Scenario: Initial state matches present figures
 
 - **WHEN** the simulator first renders
-- **THEN** the seat share reads 5.31 percent and the population share reads 2.74 percent
+- **THEN** the indigenous population it reports equals the official indigenous total in the same loaded data, and the seat share and population share are those of the status quo
 
-##### Example: Status quo values
+#### Scenario: No registrations exist yet
 
-| Quantity | Value |
-| -------- | ----- |
-| Total seats | 113 |
-| Indigenous seats | 6 |
-| Seat share | 5.31% |
-| Indigenous population | 637,620 |
-| National population | 23,243,565 |
-| Population share | 2.74% |
+- **WHEN** the loaded data reports zero plains-indigenous people
+- **THEN** the control opens at zero and every computed figure is identical to what the simulator produced before registrations were possible
 
+#### Scenario: Registrations exist
+
+- **WHEN** the loaded data reports a non-zero plains-indigenous population
+- **THEN** the control opens at that number, and the reported indigenous population still equals the official indigenous total rather than exceeding it
+
+##### Example: base arithmetic with registrations
+
+| Official indigenous total | Already-counted plains | Control value | Reported indigenous population |
+| ------------------------- | ---------------------- | ------------- | ------------------------------ |
+| 637,620 | 0 | 0 | 637,620 |
+| 638,466 | 846 | 846 | 638,466 |
+| 638,466 | 846 | 50,000 | 687,620 |
+| 638,466 | 846 | 0 | 637,620 |
+
+---
 ### Requirement: Two allocation methods produce different arithmetic
 
 Under reallocation, increasing reserved seats SHALL decrease regional seats by the same amount and leave the chamber size unchanged. Under addition, increasing reserved seats SHALL increase the chamber size and leave regional seats unchanged.
@@ -56,22 +70,31 @@ Under reallocation, increasing reserved seats SHALL decrease regional seats by t
 | Reallocation | 8 | 71 | 113 | 7.08% |
 | Addition | 8 | 73 | 115 | 6.96% |
 
+---
 ### Requirement: Population slider bounds are declared as reference points
 
-The plains population slider SHALL have an upper bound equal to the current indigenous population, and SHALL mark the two sourced values — zero and the published first-year registration estimate — as labelled reference points.
+The plains population slider SHALL have an upper bound equal to the current indigenous population, and SHALL mark the two sourced values — the number of plains-indigenous people the loaded official statistics already count, and the published first-year registration estimate — as labelled reference points.
 
 The interface SHALL state that the upper bound is a reference point and not a claim about the size of the plains indigenous population.
+
+The label for the officially counted reference point SHALL state the figure the loaded data reports, and SHALL NOT assert that no registrations exist unless the loaded data reports zero.
 
 #### Scenario: Reference points are labelled
 
 - **WHEN** the slider renders
-- **THEN** the zero point is labelled as the official current figure and the estimate point is labelled as an academic estimate covering one group's first year only
+- **THEN** the officially counted point is labelled as the current official figure and the estimate point is labelled as an academic estimate covering one group's first year only
 
 #### Scenario: Unsourced range is marked
 
 - **WHEN** the slider value falls in a range with no official or academic basis
 - **THEN** the interface marks that range as having no published basis
 
+#### Scenario: Official reference point follows the data
+
+- **WHEN** the loaded data reports a non-zero plains-indigenous population
+- **THEN** the officially counted reference point sits at that value and its label states that value, rather than stating that registrations stand at zero
+
+---
 ### Requirement: Fixed assumptions are stated and inspectable
 
 The simulator SHALL state the assumptions it holds fixed — that included persons are counted in the indigenous electoral roll, and that no separate seat category is created — and SHALL make them visible on demand.
@@ -81,6 +104,7 @@ The simulator SHALL state the assumptions it holds fixed — that included perso
 - **WHEN** a user requests the assumptions
 - **THEN** the interface lists the fixed assumptions and notes that the governing legislation does not yet determine them
 
+---
 ### Requirement: Present outputs as arithmetic, not advocacy
 
 The simulator SHALL present its outputs as the arithmetic consequence of the user's inputs, and SHALL NOT describe any configuration as recommended, correct, or expected.
@@ -90,6 +114,7 @@ The simulator SHALL present its outputs as the arithmetic consequence of the use
 - **WHEN** any configuration is displayed
 - **THEN** no configuration is labelled as recommended or expected
 
+---
 ### Requirement: State that seat allocation for plains groups is undetermined
 
 The simulator SHALL state that the governing legislation requires legislation on political participation within a stated deadline without specifying its form, and that reserved seats are one possible form among others.
@@ -99,6 +124,7 @@ The simulator SHALL state that the governing legislation requires legislation on
 - **WHEN** the simulator renders
 - **THEN** it states that the form of political participation is not determined by the current legislation
 
+---
 ### Requirement: Report both population and elector bases
 
 The simulator SHALL report the representation gap using population as the denominator, and SHALL offer the elector-based figure as an alternative view, stating that the two bases yield different results and that the choice is not neutral.
@@ -115,6 +141,7 @@ The simulator SHALL report the representation gap using population as the denomi
 | Population | 2.51% |
 | Electors | 2.25% |
 
+---
 ### Requirement: Present the legal timeline that makes seat allocation an open question
 
 The simulator SHALL present a timeline of the constitutional and legislative events that placed the question of plains indigenous political participation before the legislature, with each event carrying its date and a link to the primary source.
