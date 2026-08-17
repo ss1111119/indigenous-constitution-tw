@@ -22,17 +22,32 @@ import { traceable } from './provenance.js';
    來源見 data/sources.json 的 constitution-amendment-art4。 */
 const STATUTORY = { total: 113, indigenous: 6, regional: 73, party: 34 };
 
-/* 有出處的兩個參照點。除此之外的任何數值都沒有官方或學術依據。
-   限定條件必須完整寫出——「5 萬」若不說明是【西拉雅一族、第一年、自願登記】，
-   讀者會把它當成平埔族群的總人口推估，那是全頁誤讀風險最高的一處。 */
-const ANCHORS = [
-  {
-    value: 0,
-    label: '0',
+/* 有出處的兩個參照點：官方登記數（隨資料變動）與學術推估（固定引用）。
+   除此之外的任何數值都沒有官方或學術依據。限定條件必須完整寫出——
+   「5 萬」若不說明是【西拉雅一族、第一年、自願登記】，讀者會把它當成平埔族群的
+   總人口推估，那是全頁誤讀風險最高的一處。 */
+
+/* 官方參照點的數值、標籤與說明都由載入的資料導出，不寫死。
+   寫死的「目前登記數為 0」在首批登記出現後就會與人口面板互相矛盾，
+   而它不會自己失效——見 design 決策二。 */
+function officialAnchor(registered) {
+  return {
+    value: registered,
+    label: fmt(registered),
     caption: '目前官方登記數',
     nature: 'official-statistic',
-    detail: '內政部戶政司自民國 114 年 11 月起在官方統計中預留平埔族群欄位，2026 年 6 月的值為 0。',
-  },
+    /* 這個數字隨載入資料變動，故須比照站台其他數字掛上來源與期別；
+       只讓數值動態、說明仍寫死期別，就會變成溯源與數字不一致——見 design 決策六。 */
+    traceField: '已登記平埔原住民人口',
+    detail: registered > 0
+      ? '內政部戶政司自民國 114 年 11 月起在官方統計中預留平埔族群欄位。'
+        + `本期載入的資料中，已登記的平埔原住民為 ${fmt(registered)} 人。`
+      : '內政部戶政司自民國 114 年 11 月起在官方統計中預留平埔族群欄位。'
+        + '本期載入的資料中該欄位為 0——是「尚無人登記」，不是「沒有這個統計類別」。',
+  };
+}
+
+const ESTIMATE_ANCHORS = [
   {
     value: 50000,
     label: '5 萬',
@@ -46,7 +61,13 @@ const ANCHORS = [
   },
 ];
 
+function anchorsFor(registered) {
+  return [officialAnchor(registered), ...ESTIMATE_ANCHORS];
+}
+
 const state = {
+  /* 初始值在 render 時依載入資料覆寫為已登記平埔人口。這裡的 0 只是模組載入時的
+     佔位，不是「現況為零」的主張。 */
   plains: 0,
   seats: STATUTORY.indigenous,
   method: 'reallocate',
@@ -228,10 +249,10 @@ function timelineMarkup() {
     </details>`;
 }
 
-function anchorMarkup() {
-  return ANCHORS.map((a) => `
+function anchorMarkup(anchors) {
+  return anchors.map((a) => `
     <div class="anchor" data-nature="${a.nature}">
-      <p class="anchor-head"><strong>${a.label}</strong> ${a.caption}</p>
+      <p class="anchor-head"><strong${a.traceField ? ` data-role="anchor-official"` : ''}>${a.label}</strong> ${a.caption}</p>
       <p class="anchor-detail">${a.detail}</p>
     </div>`).join('');
 }
@@ -285,14 +306,29 @@ function render(container, [popData, elections, byCategoryData]) {
   /* 全國現況。分子分母同一份資料、同一基準日——避免跨機關的口徑落差。 */
   let indigenousNow = 0;
   let populationNow = 0;
+  /* 官方統計中【已登記】的平埔人口。轉檔的 indigenous_total 定義為
+     山地＋平地＋平埔，所以這些人已經在 indigenousNow 裡面了。
+     滑桿代表「納入保障體系的平埔人口總數」而非增量，故計算基數時必須先扣除，
+     否則已登記者會被算兩次——見 design 決策一。
+     欄位不存在時（平埔欄位出現之前的歷史期別）以 0 計，行為與欄位存在且為 0 相同。 */
+  let pingpuRegistered = 0;
   for (const r of popData.data) {
     indigenousNow += r.indigenous_total;
     populationNow += r.population_total;
+    pingpuRegistered += r.indigenous_pingpu ?? 0;
   }
+  /* 不含平埔的原住民人口。滑桿值加在這上面，才不會與已登記者重複。 */
+  const indigenousExcludingPingpu = indigenousNow - pingpuRegistered;
+
+  /* 現況＝把官方已登記的平埔人口納入。滑桿歸零代表「不納入已登記者」的反事實情境，
+     不是現況——見 design 決策五。
+     滑桿初始值只寫在下面的標記裡：update() 一律從 DOM 讀值，這裡再設一次 state.plains
+     會變成第二個真相來源，兩者一旦不同步就很難查。 */
+  const anchors = anchorsFor(pingpuRegistered);
 
   /* 固定假設第 2 條的量化對照。資料缺任一項就整段不顯示——寧可少一段說明，
      也不要顯示算不完整的對照數字。 */
-  const estimateAnchor = ANCHORS.find((a) => a.nature === 'academic-estimate');
+  const estimateAnchor = ESTIMATE_ANCHORS.find((a) => a.nature === 'academic-estimate');
   const contrast = assumptionContrast(byCategoryData?.data ?? [], estimateAnchor?.value);
   const contrastMarkup = contrast ? `
     <div class="sim-contrast">
@@ -343,12 +379,15 @@ function render(container, [popData, elections, byCategoryData]) {
     <div class="sim-controls">
       <div class="sim-control">
         <label for="sim-plains">平埔族群納入人口數</label>
-        <input type="range" id="sim-plains" min="0" max="${indigenousNow}" step="1000" value="0">
-        <output id="sim-plains-out">0 人</output>
+        <!-- step 為 1：已登記平埔人口不必然是千的倍數（首批登記很可能是三位數），
+             若沿用千人級距，初始值會被瀏覽器調整成合法值，畫面數字就與官方數字不符。 -->
+        <input type="range" id="sim-plains" min="0" max="${indigenousNow}" step="1"
+               value="${pingpuRegistered}">
+        <output id="sim-plains-out">${fmt(pingpuRegistered)} 人</output>
         <p class="sim-scale-note" id="sim-plains-scale"></p>
-        <div class="sim-anchors">${anchorMarkup()}</div>
+        <div class="sim-anchors">${anchorMarkup(anchors)}</div>
         <p class="sim-caption">
-          除了上面標出的 ${ANCHORS.length} 個點以外，滑桿上的任何數值都
+          除了上面標出的 ${anchors.length} 個點以外，滑桿上的任何數值都
           <strong>沒有官方或學術依據</strong>。
         </p>
         <details class="sim-why">
@@ -447,6 +486,18 @@ function render(container, [popData, elections, byCategoryData]) {
   `;
   container.append(root);
 
+  /* 官方參照點的數值來自載入的人口檔，性質為官方統計。與對照百分比分開處理：
+     那兩個是本站計算值、且在對照資料缺失時整段不顯示，這一個則永遠存在。 */
+  const officialAnchorEl = root.querySelector('[data-role="anchor-official"]');
+  if (officialAnchorEl) {
+    officialAnchorEl.textContent = '';
+    officialAnchorEl.append(traceable(fmt(pingpuRegistered), {
+      sourceId: popData._sourceId,
+      field: '已登記平埔原住民人口',
+      nature: popData._fieldNature?.indigenous_pingpu ?? 'official-statistic',
+    }));
+  }
+
   /* 對照的兩個百分比是本站計算值，掛上溯源。基底資料為 CEC 的分類選舉人數，
      故 sourceId 取自該檔；性質為 derived-by-this-project——官方從未發布過
      「若平埔族群落在某一類，每席選民會增加多少」這個數字。 */
@@ -484,20 +535,20 @@ function render(container, [popData, elections, byCategoryData]) {
     /* 量級關係在整條滑桿上都看得到，而不是只有端點被貼上一句敘事。 */
     const scaleNote = root.querySelector('#sim-plains-scale');
     scaleNote.textContent = state.plains === 0
-      ? '相當於現有原住民族人口的 0%'
+      ? '相當於現有原住民族人口的 0%——即不把任何平埔人口納入保障體系'
       : `相當於現有原住民族人口（${fmt(indigenousNow)} 人）的 ${pct(state.plains, indigenousNow).toFixed(1)}%`;
 
     state.basis = root.querySelector('input[name="sim-basis"]:checked').value;
 
     const seatsResult = compute(state.seats, state.method);
     /* 分母不變：平埔族人本來就是既有國民，取得身分不會改變全國人口。
-       只有分子（原住民人口）增加。 */
-    const indigenous = indigenousNow + state.plains;
+       只有分子（原住民人口）改變。滑桿等於已登記數時，此式還原成官方總數。 */
+    const indigenous = indigenousExcludingPingpu + state.plains;
     const seatShare = pct(seatsResult.indigenous, seatsResult.total);
     const popShare = pct(indigenous, populationNow);
     const gap = seatShare - popShare;
 
-    const isStatusQuo = state.plains === 0 && state.seats === STATUTORY.indigenous;
+    const isStatusQuo = state.plains === pingpuRegistered && state.seats === STATUTORY.indigenous;
 
     /* 與現況的差值。兩種算法各自的代價都要一樣明顯——
        重分配讓區域立委減少、增額讓總席次膨脹，兩者都有人會反對。

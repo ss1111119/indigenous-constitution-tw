@@ -213,7 +213,10 @@ function render(container, [dataset], region) {
       .map(([key, name]) => `${name} ${fmt(row[key])} 人`)
       .join('、')
       + (registered.length < pingpu.present.length ? '；其餘尚無登記。' : '');
-    note.textContent = '這是官方統計中首次出現的平埔族群戶籍登記人口。'
+    /* 不宣稱「首次」：本站一次只載入一個期別，沒有前期可比對，因此無從判定
+       該期是否為第一個非零期別。寫死的「首次」在下一期就會變成假話。
+       待逐月時序產出物存在後，若屆時有判定依據再行恢復。 */
+    note.textContent = '這是官方統計中的平埔族群戶籍登記人口。'
       + '數字與期別均取自載入的資料本身，不由當前日期推定。';
   }
 
@@ -270,8 +273,10 @@ function render(container, [dataset], region) {
   const sum = bars.reduce((s, d) => s + d.value, 0) + (pingpu.total ?? 0);
   const foot = document.createElement('p');
   foot.className = 'chart-foot';
+  /* 「以上」不足以涵蓋加總範圍：平埔族群即使非零也呈現於圖表下方的獨立區塊，
+     不在長條之中。數字本來就是對的，錯的是指涉。 */
   foot.textContent = sum === row.indigenous_total
-    ? `以上各族與未申報合計 ${fmt(sum)} 人，等於原住民人口總數。`
+    ? `圖中各族、未申報，加上下方的平埔族群，合計 ${fmt(sum)} 人，等於原住民人口總數。`
     : `⚠️ 各族合計 ${fmt(sum)} 人與原住民人口總數 ${fmt(row.indigenous_total)} 人不符，請回報。`;
   container.append(foot);
 }

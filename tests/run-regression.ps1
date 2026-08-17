@@ -171,6 +171,65 @@ if($r.ExitCode -eq 0 -and $missing.Count -eq 0){
 }
 Remove-Sandbox $r
 
+# --- 成功路徑：平埔族群已有登記 ---
+# 全零的 success 樣本證明不了平埔處理是對的：平埔全為 0 時，無論轉檔讀的是主清單
+# 還是平行的交叉表，所有恆等式都會成立。本樣本把 846 人從平地移到平埔（013）並
+# 同額從阿美族移到西拉雅族（018），兩來源各自維持自洽、原住民合計不變；
+# 交叉表則刻意填成合計 1,176，誤讀者會得到 1,176 而不是 846。
+Write-Host ''
+Write-Host 'pingpu-registered 樣本（平埔非零，兩來源自洽，應成功轉換）'
+$p = Invoke-ConversionInSandbox -Case 'pingpu-registered'
+
+Assert-That -Name 'pingpu-registered：轉檔以狀態碼 0 結束' -Condition ($p.ExitCode -eq 0) `
+  -Detail "實際狀態碼 $($p.ExitCode)。stderr: $($p.Stderr)"
+
+$pMissing = @($expected | Where-Object { $p.Outputs -notcontains $_ })
+Assert-That -Name 'pingpu-registered：四份 processed JSON 全數產出' -Condition ($pMissing.Count -eq 0) `
+  -Detail "缺少：$($pMissing -join '、')"
+
+if($p.ExitCode -eq 0 -and $pMissing.Count -eq 0){
+  $pCounty = Get-Content (Join-Path $p.Sandbox 'data/processed/population-by-county.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+  $pTribes = Get-Content (Join-Path $p.Sandbox 'data/processed/tribes-by-county.json')     -Raw -Encoding UTF8 | ConvertFrom-Json
+
+  # ODRP013 側：身分別的平埔合計。
+  $pinPop = 0; foreach($c in $pCounty.data){ $pinPop += $c.indigenous_pingpu }
+  Assert-That -Name 'pingpu-registered：人口檔平埔合計等於樣本構造值 846' -Condition ($pinPop -eq 846) `
+    -Detail "實際 $pinPop（若為 1176 表示讀到了平埔交叉表欄位）"
+
+  # ODRP018 側：主清單十個平埔族欄位。兩側取自不同 endpoint，須各自對得上。
+  $pingpuKeys = @('siraya','ketagalan','taokas','pazeh','papora','babuza','hoanya','kaxabu','taivoan','makatau')
+  $pinTribe = 0
+  foreach($t in $pTribes.data){ foreach($k in $pingpuKeys){ $pinTribe += $t.$k } }
+  Assert-That -Name 'pingpu-registered：族別檔十個平埔欄位合計等於 846' -Condition ($pinTribe -eq 846) `
+    -Detail "實際 $pinTribe（若為 1176 表示讀到了平埔交叉表欄位）"
+
+  Assert-That -Name 'pingpu-registered：兩來源的平埔合計一致' -Condition ($pinPop -eq $pinTribe) `
+    -Detail "人口檔 $pinPop、族別檔 $pinTribe"
+
+  # 平埔非零時，族別加總等於原住民合計這條恆等式才真正被考驗到。
+  $pNatInd = 0; foreach($c in $pCounty.data){ $pNatInd += $c.indigenous_total }
+  Assert-That -Name 'pingpu-registered：原住民合計仍為 23,265' -Condition ($pNatInd -eq 23265) `
+    -Detail "實際 $pNatInd"
+
+  $firstRow = $pTribes.data[0]
+  $rowSum = 0
+  foreach($k in $pingpuKeys){ $rowSum += $firstRow.$k }
+  foreach($k in @('amis','atayal','paiwan','bunun','rukai','pinuyumayan','cou','saisiyat','yami',
+                  'thao','kavalan','truku','sakizaya','sediq','hlaalua','kanakanavu','undeclared')){
+    $rowSum += $firstRow.$k
+  }
+  Assert-That -Name 'pingpu-registered：首列族別加總等於 indigenous_total' `
+    -Condition ($rowSum -eq $firstRow.indigenous_total) `
+    -Detail "加總 $rowSum、indigenous_total $($firstRow.indigenous_total)"
+
+  # 山地＋平地＋平埔＝原住民合計。平埔為 0 時這條同樣不具鑑別力。
+  $tri = 0
+  foreach($c in $pCounty.data){ $tri += $c.indigenous_mountain + $c.indigenous_plain + $c.indigenous_pingpu }
+  Assert-That -Name 'pingpu-registered：山地＋平地＋平埔等於原住民合計' -Condition ($tri -eq $pNatInd) `
+    -Detail "三者相加 $tri、原住民合計 $pNatInd"
+}
+Remove-Sandbox $p
+
 # --- 失敗路徑 ---
 # 只測成功路徑等於沒測到安全網本身：自我驗證的價值全在它擋下了什麼。
 # 兩個樣本都刻意違反腳本內建的檢查，斷言【中止】與【不留下任何產出檔案】兩者皆成立。
