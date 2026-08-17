@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines how the site picks up newly published household registration periods without a human polling the source: a recurring check that reads period availability from the response payload rather than the HTTP status code and that clears a backlog of more than one period, conversion committed only after the existing self-validation passes and — unless released by the named override below — the national indigenous total stays within a one-percent change band, and an explicit invocation of the existing deployment workflow because a commit pushed by the automation's own credentials raises no push event. Also covers the manual run for rebuilding any chosen period, which is idempotent and skips only discovery, and the named human override that releases a period outside the change band — available only on a manual run, requiring an acceptance flag and a stated reason together, recording the reason in the commit message, and offering no way to raise or disable the band itself.
+Defines how the site picks up newly published household registration periods without a human polling the source: a recurring check that reads period availability from the response payload rather than the HTTP status code and that clears a backlog of more than one period, conversion committed only after the existing self-validation passes and the national indigenous total stays within a one-percent change band (which yields in exactly two ways — the named human override below, or the absence of a usable baseline to compare against — neither of them a loosening of the threshold itself), and an explicit invocation of the existing deployment workflow because a commit pushed by the automation's own credentials raises no push event. Also covers the manual run for rebuilding any chosen period, which is idempotent and skips only discovery, and the named human override that releases a period outside the change band — available only on a manual run, requiring an acceptance flag and a stated reason together, recording the reason in the commit message, and offering no way to raise or disable the band itself.
 
 ## Requirements
 
@@ -79,7 +79,7 @@ code:
 ---
 ### Requirement: Refreshed data is committed only after validation passes
 
-The system SHALL run the existing conversion self-validation before committing refreshed data, and SHALL additionally reject a period whose national indigenous total differs from the previous period by more than one percent. When any validation fails, the job SHALL fail, SHALL NOT commit, and SHALL leave the repository unchanged.
+The system SHALL run the existing conversion self-validation before committing refreshed data, and SHALL additionally reject a period whose national indigenous total differs from the previous period by more than one percent. The change-band comparison requires a usable baseline: the national indigenous total derived from the processed county-level population file already present in the repository. When no usable baseline exists — that file is absent, or the total derived from it is not greater than zero — the system SHALL skip the change-band comparison rather than aborting, and SHALL state in the job output that the comparison was skipped and why. Skipping the comparison SHALL NOT skip the conversion self-validation. When any validation fails, the job SHALL fail, SHALL NOT commit, and SHALL leave the repository unchanged.
 
 #### Scenario: Validation passes
 
@@ -99,6 +99,19 @@ The system SHALL run the existing conversion self-validation before committing r
 | 637,620 | 643,500 | +0.92% | committed |
 | 637,620 | 645,000 | +1.16% | rejected |
 | 637,620 | 63,762 | −90% | rejected |
+
+#### Scenario: No usable baseline for the change band
+
+- **WHEN** conversion runs with no processed county-level population file in the repository, or with one whose derived national indigenous total is not greater than zero
+- **THEN** the change-band comparison is skipped, the job output states that it was skipped and which condition caused it, and the conversion self-validation alone decides whether the job proceeds
+
+##### Example: baseline conditions
+
+| Processed county file | Derived previous total | Change-band comparison |
+| --------------------- | ---------------------- | ---------------------- |
+| absent (first build on a clean repository) | none | skipped, reason stated |
+| present | 0 | skipped, reason stated |
+| present | 637,620 | compared against 637,620 |
 
 #### Scenario: Conversion self-validation fails
 
