@@ -1,0 +1,161 @@
+/* 資料目錄頁
+ *
+ * 只定義本頁專用的樣式，色彩一律沿用 main.css 的 :root 變數
+ * （含深色模式的覆寫），不在此重新宣告任何顏色字面值——
+ * 重新宣告會讓深色模式在這一頁失效，而那要等有人用深色模式開這頁才會發現。
+ */
+
+.catalogue-page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.cat-back {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
+.cat-lede {
+  max-width: 46rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* 授權警語用邊框而非底色：底色在深色模式下容易與 surface 混在一起，
+   邊框在兩種模式下都看得出這是一段需要讀完的字。 */
+.cat-warning {
+  max-width: 46rem;
+  border: 1px solid var(--gap-warn);
+  border-left-width: 4px;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  line-height: 1.7;
+}
+
+.cat-summary {
+  margin: 2rem 0 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--accent-soft);
+  border-radius: 4px;
+}
+
+.cat-summary p { margin: 0.25rem 0; }
+.cat-summary-note { color: var(--text-muted); font-size: 0.9rem; }
+
+.cat-section { margin-top: 2.5rem; }
+.cat-section-note { color: var(--text-muted); }
+
+/* 缺口區塊與來源區塊必須一眼看得出是不同的東西——
+   讀者若把「不存在的資料」當成「可取用的資料」，這一頁就是失敗的。 */
+.cat-section-gaps {
+  border-top: 3px solid var(--gap-warn);
+  padding-top: 1rem;
+}
+
+.cat-entry,
+.cat-gap {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1rem;
+  background: var(--surface);
+}
+
+.cat-gap { border-left: 4px solid var(--gap-warn); }
+
+.cat-entry-head h3,
+.cat-gap h3 { margin: 0 0 0.15rem; }
+
+.cat-id {
+  margin: 0 0 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* 欄位表格：窄螢幕改為單欄堆疊，避免長授權名稱把版面撐出橫向捲軸。 */
+.cat-fields {
+  display: grid;
+  grid-template-columns: minmax(6rem, 10rem) 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0 0 0.9rem;
+}
+
+.cat-fields dt { color: var(--text-muted); }
+.cat-fields dd { margin: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 34rem) {
+  .cat-fields { grid-template-columns: 1fr; gap: 0.1rem; }
+  .cat-fields dd { margin-bottom: 0.5rem; }
+}
+
+.cat-links { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 0.9rem; }
+
+/* 授權的兩半並排，窄螢幕堆疊。並排是刻意的：
+   「宣告」與「判斷」放在一起才看得出它們是兩件事。 */
+.cat-licence {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+}
+
+@media (max-width: 48rem) {
+  .cat-licence { grid-template-columns: 1fr; }
+}
+
+.cat-licence h4 { margin: 0 0 0.35rem; font-size: 0.92rem; }
+.cat-licence-text { margin: 0 0 0.35rem; line-height: 1.6; }
+.cat-licence-link { font-size: 0.9rem; }
+
+.cat-reuse {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+}
+
+/* 三種判斷各自可辨。unknown 不套用任一端的顏色——
+   把「尚未判斷」畫成綠或紅，就是替使用者做了一個沒有依據的決定。 */
+.cat-reuse[data-tone="yes"] { color: var(--accent); }
+.cat-reuse[data-tone="no"] { color: var(--gap-warn); }
+.cat-reuse[data-tone="unknown"] {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.cat-reuse-scope,
+.cat-reuse-conflict {
+  margin: 0 0 0.4rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.cat-reuse-conflict { color: var(--gap-warn); }
+
+.cat-notes { margin-top: 0.9rem; }
+.cat-notes summary { cursor: pointer; color: var(--accent); }
+
+/* 原文照登，含來源自己的換行與符號。white-space: pre-wrap 保留段落結構，
+   overflow-wrap 讓長網址不撐破版面。 */
+.cat-notes-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.75;
+  margin: 0.6rem 0 0;
+}
+
+.cat-gap-reason { line-height: 1.7; }
+.cat-gap-surrogate,
+.cat-gap-mustnot { line-height: 1.7; }
+.cat-gap-mustnot { color: var(--gap-warn); }
+
+.cat-loading { color: var(--text-muted); }
+
+.cat-page-foot {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+}

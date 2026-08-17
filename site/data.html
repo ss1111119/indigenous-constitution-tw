@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>資料目錄——臺灣原住民族公開資料</title>
+<meta name="description" content="本站使用的每一份原住民族公開資料：取得方式、授權狀態、格式陷阱、自動化障礙，以及查證後確認不存在的資料缺口。">
+
+<link rel="canonical" href="https://ss1111119.github.io/indigenous-constitution-tw/data.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="臺灣原住民族憲政代表性與土地資料">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:url" content="https://ss1111119.github.io/indigenous-constitution-tw/data.html">
+<meta property="og:title" content="資料目錄——臺灣原住民族公開資料">
+<meta property="og:description" content="每一份資料的取得方式、授權狀態、格式陷阱與自動化障礙，以及查證後確認不存在的資料缺口。">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#7a4a2b">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/catalogue.css">
+</head>
+<body class="catalogue-page">
+
+<header class="cat-page-head">
+  <p class="cat-back"><a href="index.html">← 回到資料儀表板</a></p>
+  <h1>資料目錄</h1>
+  <p class="cat-lede">
+    這一頁給想使用這些資料的人。臺灣原住民族的公開資料散在多個機關，
+    各有各的取得方式、授權規範與口徑陷阱。
+    本站在建站過程中逐筆查證並記錄，這裡是那份記錄的完整呈現。
+    <!-- 機關清單由登記檔產生，不寫在標記裡：寫死會在新增來源時漏列。 -->
+    <span data-role="agency-list"></span>
+  </p>
+  <p class="cat-lede">
+    內容全部由 <a href="data/sources.json"><code>data/sources.json</code></a> 產生，
+    該檔是唯一真實來源；本頁不另行改寫或摘要任何一筆。
+  </p>
+  <!--
+    授權的警語放在頁首而不只放在各筆裡：讀者可能只看一筆就離開，
+    而「本專案的判斷 ≠ 給你的授權」這件事對每一筆都成立。
+  -->
+  <p class="cat-warning">
+    <strong>關於授權：</strong>每筆的「提供者的授權宣告」與「本專案的再利用判斷」是兩件事。
+    後者記的是本專案對<strong>自身</strong>使用方式的結論，其射程可能比你的用途窄。
+    授權允許再利用，也不等於免除個人資料保護、商標、來源標示等其他義務。
+    部分檔案含個人資料，是否得蒐集處理利用須自行依個人資料保護法辦理——
+    各筆的附帶義務與其依據記於該筆的「原始說明」，使用前請讀完該段。
+  </p>
+</header>
+
+<main data-role="catalogue">
+  <p class="cat-loading">載入中……</p>
+</main>
+
+<noscript>
+  <div class="noscript-note">
+    這一頁的目錄列表需要 JavaScript 才能產生——內容由
+    <code>data/sources.json</code> 於瀏覽器端讀取後渲染，這是為了讓登記檔成為唯一真實來源，
+    而不是把 22 筆內容手寫在頁面裡。
+    停用 JavaScript 時，可直接閱讀
+    <a href="data/sources.json"><code>data/sources.json</code></a> 原始檔，
+    其中含有本頁呈現的全部欄位與說明。
+  </div>
+</noscript>
+
+<footer class="cat-page-foot">
+  <p>
+    本專案為資料呈現與制度模擬，不代表任何政黨、政府機關或作者的政治立場。
+    資料缺口的認定與授權判斷均記於登記檔，並附推導過程。
+  </p>
+  <p><a href="index.html">← 回到資料儀表板</a></p>
+</footer>
+
+<script type="module" src="js/catalogue.js"></script>
+</body>
+</html>
