@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change 'scheduled-data-refresh'. Update Purpose after archive.
+Defines how the site picks up newly published household registration periods without a human polling the source: a recurring check that reads period availability from the response payload rather than the HTTP status code and that clears a backlog of more than one period, conversion committed only after the existing self-validation passes and — unless released by the named override below — the national indigenous total stays within a one-percent change band, and an explicit invocation of the existing deployment workflow because a commit pushed by the automation's own credentials raises no push event. Also covers the manual run for rebuilding any chosen period, which is idempotent and skips only discovery, and the named human override that releases a period outside the change band — available only on a manual run, requiring an acceptance flag and a stated reason together, recording the reason in the commit message, and offering no way to raise or disable the band itself.
 
 ## Requirements
 
