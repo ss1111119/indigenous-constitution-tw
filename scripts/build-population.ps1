@@ -331,6 +331,7 @@ if(Test-Path $prevPath){
   $prevInd = 0; foreach($c in $prev.data){ $prevInd += $c.indigenous_total }
   if($prevInd -le 0){
     Write-Host "  幅度檢查略過：前一期檔案的原住民合計為 $prevInd，無法作為基準"
+    Write-Host 'REFRESH_AMPLITUDE=skipped'
   } else {
     $deltaPct = ($natInd - $prevInd) * 100 / $prevInd
     $shown = [math]::Round($deltaPct, 4)
@@ -352,9 +353,18 @@ if(Test-Path $prevPath){
     } else {
       Write-Host "  幅度檢查通過：原住民總人口 $prevInd → $natInd（$shown%，門檻 ±1%）"
     }
+
+    # 給機器讀的一行。上面那些中文訊息是寫給讀流程紀錄的人看的，措辭隨時可能為了
+    # 可讀性而改寫；刷新流程若去比對那些字，措辭一改耦合就斷，而斷掉的那天
+    # 正好是第一次真的需要放行的那天。故另出一行與語言無關的固定格式標記。
+    #
+    # 只在幅度檢查【實際執行】時輸出。無可比基準而略過時不輸出——
+    # 此時並不存在「觀察到的變動」，印 0 會與「變動確實為 0%」混淆。
+    Write-Host "REFRESH_AMPLITUDE=computed DELTA_PCT=$shown RELEASED=$(if($AcceptLargeChange -and [math]::Abs($deltaPct) -gt 1){'true'}else{'false'})"
   }
 } else {
   Write-Host '  幅度檢查略過：找不到 data/processed/population-by-county.json（首次建置）'
+  Write-Host 'REFRESH_AMPLITUDE=skipped'
 }
 
 # --- 寫出 ---

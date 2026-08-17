@@ -50,7 +50,10 @@ function Invoke-ConversionInSandbox {
   param(
     [Parameter(Mandatory)][string]$Case,
     # 附加給 build-population.ps1 的參數（放行路徑用）。預設為空，既有案例行為不變。
-    [string[]]$ExtraArgs = @()
+    [string[]]$ExtraArgs = @(),
+    # 不鋪前一期基準，藉此讓附了 previous/ 的樣本也能走「無可比基準」那條路。
+    # 與其複製一份只差在沒有 previous/ 的樣本，不如讓同一份樣本兩種情境都跑得到。
+    [switch]$SkipPrevious
   )
 
   $caseDir = Join-Path $fixtures $Case
@@ -68,7 +71,7 @@ function Invoke-ConversionInSandbox {
   # 幅度檢查以版本庫既有的 processed 檔為前一期基準。案例若附 previous/，
   # 就先鋪進沙箱，讓檢查有比較對象；沒附的案例會走「首次建置，略過檢查」那條路。
   $prevDir = Join-Path $caseDir 'previous'
-  if(Test-Path $prevDir){
+  if((Test-Path $prevDir) -and -not $SkipPrevious){
     New-Item -ItemType Directory -Force -Path (Join-Path $sandbox 'data/processed') | Out-Null
     Copy-Item (Join-Path $prevDir '*.json') (Join-Path $sandbox 'data/processed')
   }
@@ -84,7 +87,7 @@ function Invoke-ConversionInSandbox {
   return @{
     Case     = $Case
     Sandbox  = $sandbox
-    Seeded   = (Test-Path $prevDir) ? @(Get-ChildItem $prevDir -Filter *.json | ForEach-Object { $_.Name }) : @()
+    Seeded   = ((Test-Path $prevDir) -and -not $SkipPrevious) ? @(Get-ChildItem $prevDir -Filter *.json | ForEach-Object { $_.Name }) : @()
     ExitCode = $proc.ExitCode
     # 空檔時 Get-Content -Raw 回 $null，會讓呼叫端的 .Trim() 炸掉——一律正規化為空字串。
     Stdout   = (Test-Path $outLog) ? ((Get-Content $outLog -Raw -Encoding UTF8) ?? '') : ''
@@ -121,6 +124,24 @@ Assert-That -Name 'success：轉檔以狀態碼 0 結束' -Condition ($r.ExitCod
 # 【跑過並通過】。若沒有這項斷言，檢查被整段略過也會是綠燈。
 Assert-That -Name 'success：幅度檢查實際執行且通過' -Condition ($r.Stdout -match '幅度檢查通過') `
   -Detail "stdout: $($r.Stdout.Trim())"
+
+# 機器可讀標記：刷新流程靠它判斷放行與取得百分比，不靠上面那句中文。
+# 兩者【並存】才是對的——中文給人讀，標記給流程讀，改其一不該影響另一。
+Assert-That -Name 'success：輸出機器可讀標記且標明未放行' `
+  -Condition ($r.Stdout -match 'REFRESH_AMPLITUDE=computed DELTA_PCT=0\.2802 RELEASED=false') `
+  -Detail "stdout: $($r.Stdout.Trim())"
+
+# 無可比基準時【不得】輸出標記：此時並不存在「觀察到的變動」，
+# 印 0 會與「變動確實為 0%」混淆，而流程無從分辨兩者。
+$nb = Invoke-ConversionInSandbox -Case 'success' -SkipPrevious
+Assert-That -Name '無基準：轉檔仍以狀態碼 0 完成' -Condition ($nb.ExitCode -eq 0) `
+  -Detail "實際狀態碼 $($nb.ExitCode)。stderr: $($nb.Stderr.Trim())"
+Assert-That -Name '無基準：幅度檢查略過並說明原因' -Condition ($nb.Stdout -match '幅度檢查略過') `
+  -Detail "stdout: $($nb.Stdout.Trim())"
+Assert-That -Name '無基準：標記標明已略過且不帶百分比' `
+  -Condition (($nb.Stdout -match 'REFRESH_AMPLITUDE=skipped') -and ($nb.Stdout -notmatch 'DELTA_PCT')) `
+  -Detail "stdout: $($nb.Stdout.Trim())"
+Remove-Sandbox $nb
 
 $expected = @('population-by-county.json', 'population-by-township.json',
               'tribes-by-county.json', 'tribes-by-township.json')
@@ -230,6 +251,46 @@ if($p.ExitCode -eq 0 -and $pMissing.Count -eq 0){
 }
 Remove-Sandbox $p
 
+# --- commit 訊息組裝 ---
+# 組裝只有在「有變更要提交」且「該期被放行」時才走完整條路徑，而那個組合至今從未發生。
+# 這裡以合成輸入直接驗組裝本身：不經轉檔、不產生資料檔、不碰 git。
+# 驗不到的是「腳本確實在超過門檻時輸出放行標記」——那需要真實的幅度事件。
+Write-Host ''
+Write-Host 'commit 訊息組裝（合成輸入）'
+
+$composer = Join-Path $repo 'scripts/compose-commit-message.ps1'
+$multiLineReason = "西拉雅族首批身分登記`n已與原民會 11508 月報逐縣市核對"
+
+$plain = & $composer -Period 11508
+Assert-That -Name '組裝：非放行時不含放行段落' `
+  -Condition (($plain -join "`n") -notmatch '具名放行') `
+  -Detail ($plain -join ' / ')
+Assert-That -Name '組裝：非放行時不含百分比' `
+  -Condition (($plain -join "`n") -notmatch '%') `
+  -Detail ($plain -join ' / ')
+
+foreach($d in @('7.8123', '-3.5', '1.16')){
+  $rel = (& $composer -Period 11508 -Released -DeltaPct $d -Reason $multiLineReason) -join "`n"
+  Assert-That -Name "組裝：放行時含變動百分比 $d" -Condition ($rel -match [regex]::Escape("變動 $d%")) `
+    -Detail $rel
+  Assert-That -Name "組裝：放行時含理由原文（$d）" `
+    -Condition ($rel -match [regex]::Escape('西拉雅族首批身分登記') -and $rel -match [regex]::Escape('已與原民會 11508 月報逐縣市核對')) `
+    -Detail $rel
+}
+
+# 放行卻缺百分比或缺理由，是流程與腳本不同步；此時寧可中止也不要組出一個
+# 宣稱「已放行」卻說不出放行了多大變動的訊息。
+foreach($bad in @(
+  @{ n='缺百分比'; a=@{ Period='11508'; Released=$true; Reason=$multiLineReason } },
+  @{ n='缺理由';   a=@{ Period='11508'; Released=$true; DeltaPct='7.8' } }
+)){
+  # splatting 只能對區域變數做，不能寫成 @bad.a。
+  $composerArgs = $bad.a
+  $threw = $false
+  try { & $composer @composerArgs | Out-Null } catch { $threw = $true }
+  Assert-That -Name "組裝：放行但$($bad.n)時中止" -Condition $threw -Detail '未如預期中止'
+}
+
 # --- 失敗路徑 ---
 # 只測成功路徑等於沒測到安全網本身：自我驗證的價值全在它擋下了什麼。
 # 兩個樣本都刻意違反腳本內建的檢查，斷言【中止】與【不留下任何產出檔案】兩者皆成立。
@@ -330,6 +391,9 @@ Assert-That -Name 'override 並用：輸出仍指出變動百分比 1.16%' `
 # reason 須出現在輸出中，供 refresh-data.yml 寫進 commit 訊息（任務 6.2）。
 Assert-That -Name 'override 並用：輸出含放行理由原文' `
   -Condition ($o3.Stdout -match [regex]::Escape($overrideReason)) `
+  -Detail "stdout: $($o3.Stdout.Trim())"
+Assert-That -Name 'override 並用：標記標明已放行且帶百分比' `
+  -Condition ($o3.Stdout -match 'REFRESH_AMPLITUDE=computed DELTA_PCT=1\.1605 RELEASED=true') `
   -Detail "stdout: $($o3.Stdout.Trim())"
 Remove-Sandbox $o3
 
