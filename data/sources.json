@@ -763,6 +763,25 @@
       "nature": "official-statistic",
       "verification": "primary-source",
       "notes": "★【維度對得上本站的山地／平地欄位】分類為 原住民族／平地原住民／山地原住民 三類，【不是族別】。首列：108年 原住民族 0 月的平均餘命為 73.10 歲（男 68.73、女 77.45）。 ⚠️【資料集頁宣稱 90–106 年，實際檔案只有 108 年】2026-08-18 實測 273 列，第一欄「原住民族平均餘命」是「108年/ 原住民族/ 0月」這種複合字串，須自行拆解為年度、類別、年齡三個維度。頁面敘述與檔案內容不符，若需其他年度須另尋資源，本輪未查。 ⚠️【要用得先補全國基準】平均餘命的意義在於與全國比較（原住民族 73.10 歲 vs 全國約 80 歲），而全國平均餘命是另一份資料，本站沒有。單獨呈現本檔的數字無法說明落差。 ⚠️【無地理維度】無縣市或鄉鎮欄位，接不上本站的行政區維度。 ⚠️【本檔未入庫】目前不在 data/raw 或 data/processed 中。"
+    },
+    {
+      "id": "moi-odrp009-pre2018",
+      "title": "現住原住民人口按性別、身分、原住民族別分 ODRP009（無區域代碼，105–106 年）",
+      "agency": "內政部戶政司",
+      "url": "https://data.gov.tw/dataset/32971",
+      "downloadUrl": "https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP009/{yyymm}",
+      "format": "JSON（API，分頁；另有 CSV 於 opdadm.moi.gov.tw）",
+      "dataDate": "106-12（涵蓋 105-01 至 106-12）",
+      "downloadedAt": "2026-08-18",
+      "updateFrequency": "已停止更新（後續由 ODRP018 接手）",
+      "license": "政府資料開放授權條款第1版",
+      "licenseUrl": "https://data.gov.tw/license",
+      "reusable": "true",
+      "ourUse": "呼叫端點取回 10612 一期的第一頁以確認欄位結構與是否含區域代碼，未納入版本庫、未使用其數字。",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "primary-source",
+      "notes": "★【與本站主來源 ODRP018 是同一統計的前身，可把序列往回延兩年】標題與 ODRP018 幾乎相同，差別在 ODRP018 是「（新增區域代碼）」版。ODRP009 涵蓋 105–106 年，ODRP018 自 2018-01 起——時間上正好銜接，本站目前的人口序列最早只到 2018-01。 ★★【三個差異使它不能直接沿用本站的轉檔邏輯】2026-08-18 實測 ODRP009/10612 第一頁：responseCode OD-0101-S、totalPage 4、每頁 2000 列、114 個欄位。(1)【欄位前綴不同】本檔用 aborigine_*（如 aborigine_total、aborigine_amis_m），ODRP018 用 indigenous_*。scripts/build-population.ps1 的 $TribeStems 直接套用會全部取不到值。(2)【無區域代碼】只有 site_id（如「新北市板橋區」）與 village 地名，沒有 district_code。要對接本站的 5/8/11 碼行政區體系必須靠地名比對——那正是本專案在 CEC 選舉資料上踩過的坑（見 cec-votedata 的 notes：資料夾與檔名跨屆不一致）。(3)【無平埔欄位】114 個欄位中無任何 pingpu 或平埔相關欄位，與 ODRP018 已預留 10 個平埔族群欄位不同——平埔欄位是 2025-11 才加入的（見 gap-pingpu-household-population）。 ⚠️【期別參數可推導】路徑格式為 /ODRP009/{yyymm}，與 ODRP013／ODRP018 相同慣例，故若日後要回補歷史序列，技術上可自動化。 ⚠️【本檔未入庫】目前不在 data/raw 或 data/processed 中。"
     }
   ]
 }
