@@ -3,16 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>資料目錄——臺灣原住民族公開資料</title>
-<meta name="description" content="本站使用的每一份原住民族公開資料：取得方式、授權狀態、格式陷阱、自動化障礙，以及查證後確認不存在的資料缺口。">
+<title>臺灣原住民族開放資料——來源、授權與資料缺口</title>
+<meta name="description" content="臺灣原住民族公開資料的盤點：每一份的取得方式、授權狀態、格式陷阱與自動化障礙，以及查證後確認不存在的資料缺口。另附以其中幾份資料做的人口、選舉、土地與席次分析。">
 
-<link rel="canonical" href="https://ss1111119.github.io/indigenous-constitution-tw/data.html">
+<link rel="canonical" href="https://ss1111119.github.io/indigenous-constitution-tw/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="臺灣原住民族憲政代表性與土地資料">
+<meta property="og:site_name" content="臺灣原住民族開放資料">
 <meta property="og:locale" content="zh_TW">
-<meta property="og:url" content="https://ss1111119.github.io/indigenous-constitution-tw/data.html">
-<meta property="og:title" content="資料目錄——臺灣原住民族公開資料">
+<meta property="og:url" content="https://ss1111119.github.io/indigenous-constitution-tw/">
+<meta property="og:title" content="臺灣原住民族開放資料——來源、授權與資料缺口">
 <meta property="og:description" content="每一份資料的取得方式、授權狀態、格式陷阱與自動化障礙，以及查證後確認不存在的資料缺口。">
+<!--
+  分享圖：本頁成為首頁後才補上。缺 og:image 的話分享出去沒有圖，
+  而這一頁正是最可能被分享的一頁。圖檔沿用既有的 og-image.png——
+  ⚠️ 圖上的文字仍是舊定位的文案，屬已知落差，見 README。
+-->
+<meta property="og:image" content="https://ss1111119.github.io/indigenous-constitution-tw/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="臺灣原住民族開放資料——來源、授權與資料缺口">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="臺灣原住民族開放資料——來源、授權與資料缺口">
+<meta name="twitter:description" content="每一份資料的取得方式、授權狀態、格式陷阱與自動化障礙，以及查證後確認不存在的資料缺口。">
+<meta name="twitter:image" content="https://ss1111119.github.io/indigenous-constitution-tw/og-image.png">
 
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -24,14 +38,22 @@
 <body class="catalogue-page">
 
 <header class="cat-page-head">
-  <p class="cat-back"><a href="index.html">← 回到資料儀表板</a></p>
-  <h1>資料目錄</h1>
+  <h1>臺灣原住民族開放資料</h1>
   <p class="cat-lede">
-    這一頁給想使用這些資料的人。臺灣原住民族的公開資料散在多個機關，
-    各有各的取得方式、授權規範與口徑陷阱。
-    本站在建站過程中逐筆查證並記錄，這裡是那份記錄的完整呈現。
+    臺灣原住民族的公開資料散在多個機關，各有各的取得方式、授權規範與口徑陷阱。
+    本站逐筆查證並記錄，這裡是那份盤點的完整呈現——給想使用這些資料的人。
     <!-- 機關清單由登記檔產生，不寫在標記裡：寫死會在新增來源時漏列。 -->
     <span data-role="agency-list"></span>
+  </p>
+
+  <!--
+    儀表板入口放在這裡而不是頁尾：根位址原本就是儀表板，外部已累積「這裡是儀表板」
+    的認知，而靜態託管做不了轉址。入口若不在首屏，回訪者合理的推論是「儀表板被移除了」。
+    連結文字要說出它是什麼，不能只寫「儀表板」三個字。
+  -->
+  <p class="cat-to-dashboard">
+    <a href="dashboard.html">用其中幾份資料做的分析 →</a>
+    <span>人口組成、選舉代表性、保留地變遷，以及原住民保障席次的制度模擬。</span>
   </p>
   <p class="cat-lede">
     內容全部由 <a href="data/sources.json"><code>data/sources.json</code></a> 產生，
@@ -70,7 +92,7 @@
     本專案為資料呈現與制度模擬，不代表任何政黨、政府機關或作者的政治立場。
     資料缺口的認定與授權判斷均記於登記檔，並附推導過程。
   </p>
-  <p><a href="index.html">← 回到資料儀表板</a></p>
+  <p><a href="dashboard.html">用其中幾份資料做的分析：人口、選舉、土地與席次模擬 →</a></p>
 </footer>
 
 <script type="module" src="js/catalogue.js"></script>

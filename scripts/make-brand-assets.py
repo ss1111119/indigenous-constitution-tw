@@ -8,8 +8,13 @@
 # 是一次性的資產產生器：產出的 PNG 直接入庫為 site/ 的靜態資產，
 # 平常組建與部署都不會執行到這裡。
 #
-# 為什麼仍然入庫而不是手工做圖：分享卡片上的文字必須與 index.html 的文案一致，
+# 為什麼仍然入庫而不是手工做圖：分享卡片上的文字必須與首頁的文案一致，
 # 手工做圖會在改文案時安靜地失去同步。留著腳本，改文案時重跑一次即可。
+#
+# ⚠️ 2026-08-18 起首頁是 index.html（資料目錄），儀表板移至 dashboard.html。
+# 卡片文案的對應對象隨之改為新首頁的 <h1> 與 .cat-lede。
+# 目前入庫的 og-image.png 仍是舊定位的文案（「憲政代表性與土地資料」），
+# 尚未依新首頁重製——已知落差，見 README。重製需要字型與繪圖環境，不屬於組建流程。
 #
 # 為什麼是 PNG 不是 SVG：Facebook / LINE 等平台的 og:image 不支援 SVG。
 # favicon 則相反，site/favicon.svg 是手寫的向量檔，不由本腳本產生。
@@ -46,7 +51,7 @@ def font(path, size):
 
 
 def make_og():
-    """1200x630 分享卡片。文案與 index.html 的 <h1> 及 .lede 對應。"""
+    """1200x630 分享卡片。文案與首頁 index.html 的 <h1> 及 .cat-lede 對應。"""
     W, H = 1200, 630
     img = Image.new('RGB', (W, H), BG)
     d = ImageDraw.Draw(img)

@@ -159,3 +159,25 @@
   border-top: 1px solid var(--border);
   color: var(--text-muted);
 }
+
+/* 儀表板入口。放在首屏、加框，是為了讓回訪者一眼看到——
+   根位址原本是儀表板，靜態託管做不了轉址，入口不明顯就等於「功能被移除了」。 */
+.cat-to-dashboard {
+  margin: 1.25rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent-soft);
+}
+
+.cat-to-dashboard a {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.cat-to-dashboard span {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}

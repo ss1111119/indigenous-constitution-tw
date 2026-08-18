@@ -1054,3 +1054,9 @@ fieldset.sim-control { margin: 0; }
 .state-table td[data-state="absent"] { border-left-color: var(--text-muted); }
 .state-table td[data-state="zero"] { border-left-color: var(--gap-warn); }
 .state-table td[data-state="future"] { border-left-color: var(--accent); }
+
+/* 儀表板頁回站台首頁（資料盤點）的路徑。 */
+.to-catalogue {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+}

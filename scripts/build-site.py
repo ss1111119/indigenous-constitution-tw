@@ -1,7 +1,8 @@
 # site/ + 網站實際讀取的資料 → _site/（可直接發佈的靜態站）
 #
 # 用法：python scripts/build-site.py
-# 輸出：_site/index.html、_site/css|js|vendor/、_site/data/
+# 輸出：_site/index.html（資料目錄）、_site/dashboard.html（四個面板）、
+#       _site/404.html、_site/css|js|vendor/、_site/data/
 #
 # 為什麼需要這一步，而不是直接發佈 repo 根目錄：
 #   1. 首頁會落在 /site/ 這種網址，而非站台根。
@@ -15,7 +16,8 @@
 # 相依：僅 Python 標準函式庫。前端維持無 build step、無 npm 相依，
 # 這支腳本只搬檔案，除了下述唯一的一種取代之外不做任何轉換、打包或壓縮。
 #
-# 唯一被允許的轉換：把 index.html 的 {{DATA_PERIOD}} 換成實際載入資料的期別。
+# 唯一被允許的轉換：把 REQUIRED_PERIOD_PAGES 所列頁面的 {{DATA_PERIOD}}
+# 換成實際載入資料的期別。
 # 理由見 scheduled-data-refresh/design.md 決策三——這句話是「發佈時才知道正確值」
 # 的內容，讓它保持靜態就等於保證它會過期；而基準日必須在停用 JavaScript 時仍可見，
 # 所以不能交給前端在執行期渲染。
@@ -59,8 +61,18 @@ REQUIRED_DATA = [
 # 都要有對應的鄉鎮圖資」。從資料推導等於順便驗證了這個 join。
 COUNTY_POPULATION = 'processed/population-by-county.json'
 
-# 期別佔位符。頁面上每一處陳述基準日的地方都用它，取代後三處必然一致。
+# 期別佔位符。頁面上每一處陳述基準日的地方都用它，取代後必然一致。
 PERIOD_PLACEHOLDER = '{{DATA_PERIOD}}'
+
+# 必須含佔位符的頁面。與 REQUIRED_DATA 同一條紀律：明列而非掃描。
+# 掃描發佈目錄統計佔位符總數，只能證明「某處有」，不能證明「該有的那頁有」——
+# 儀表板若失去佔位符、而別處（例如日後 vendor 帶進來的說明頁）湊巧含有該字串，
+# 總數非零，組建就會誤判成功。掃描還會碰到「vendored libraries copied unchanged」的承諾。
+#
+# 首頁（資料目錄）刻意不在此清單：它呈現的是各來源各自的 dataDate，
+# 沒有單一基準日，硬給一個等於宣稱一個它沒有的資料新鮮度。
+# 日後新增呈現單一期別的頁面時，必須同時加進這裡。
+REQUIRED_PERIOD_PAGES = ['dashboard.html']
 
 
 def resolve_period():
@@ -89,18 +101,31 @@ def resolve_period():
 
 
 def substitute_period(period):
-    """把 _site/index.html 的期別佔位符換成實際期別，其餘位元組原樣不動。"""
-    page = OUT / 'index.html'
-    text = page.read_text(encoding='utf-8')
-    count = text.count(PERIOD_PLACEHOLDER)
-    if count == 0:
-        shutil.rmtree(OUT)
-        sys.exit(
-            f'組建中止：index.html 找不到 {PERIOD_PLACEHOLDER}。'
-            '頁面必須至少有一處由資料決定的基準日，否則基準日又會回到寫死的狀態。'
-        )
-    page.write_text(text.replace(PERIOD_PLACEHOLDER, period), encoding='utf-8')
-    return count
+    """把清單上每一頁的期別佔位符換成實際期別，其餘位元組原樣不動。
+
+    清單上的頁面必須存在且必須含佔位符，缺哪一項就指名哪一頁——
+    「某處有佔位符」不等於「該有的那頁有」。
+    """
+    total = 0
+    for name in REQUIRED_PERIOD_PAGES:
+        page = OUT / name
+        if not page.is_file():
+            shutil.rmtree(OUT)
+            sys.exit(
+                f'組建中止：清單要求 {name} 必須含 {PERIOD_PLACEHOLDER}，但該頁不存在。'
+                '頁面更名或刪除時，REQUIRED_PERIOD_PAGES 要一起改。'
+            )
+        text = page.read_text(encoding='utf-8')
+        count = text.count(PERIOD_PLACEHOLDER)
+        if count == 0:
+            shutil.rmtree(OUT)
+            sys.exit(
+                f'組建中止：{name} 找不到 {PERIOD_PLACEHOLDER}。'
+                '該頁必須有一處由資料決定的基準日，否則基準日又會回到寫死的狀態。'
+            )
+        page.write_text(text.replace(PERIOD_PLACEHOLDER, period), encoding='utf-8')
+        total += count
+    return total
 
 
 def required_township_geo():
