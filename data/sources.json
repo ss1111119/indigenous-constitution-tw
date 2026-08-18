@@ -669,6 +669,24 @@
       "nature": "official-statistic",
       "verification": "secondary-source",
       "notes": "★【這是本統計目前唯一的現行版本】涵蓋 112、113、114 三個年度，最後更新 2026-05-11；機器可讀的 data.gov.tw 版（cip-language-certification-by-language）停在 108 年。兩筆不可互相取代：涵蓋期間不重疊、維度也不同（本筆為群體 × 性別，另一筆為年度 × 族語別 × 級別）。 ⚠️【未下載 PDF 逐頁檢視】本輪只讀頁面說明，故「群體」欄位的實際值域（是族別、語別，還是其他分類）、是否含平埔族群、以及能否與本站族別維度對接，【待確認】。verification 因此記為 secondary-source——結論僅來自頁面敘述，未讀到檔案內容。 ★【為何值得記】《平埔原住民族群身分法》第22條使《原住民族語言發展法》立即適用，不像政治參與被推到 2028 年。本站目前只追第23條那條線，而第22條這條線已經在跑，族語認證統計是少數能觀測它的公開資料。 ⚠️【本檔未入庫】目前不在 data/raw 或 data/processed 中。"
+    },
+    {
+      "id": "cip-tribe-locations-gis",
+      "title": "原住民族部落位置GIS點位表",
+      "agency": "原住民族委員會",
+      "url": "https://data.gov.tw/dataset/156632",
+      "downloadUrl": "https://data.cip.gov.tw/API/v1/dump/datastore/A53000000A-111027-003",
+      "format": "CSV（UTF-8 with BOM；另有同 id 的 JSON 與 XML 端點）",
+      "dataDate": "2022-07-25（檔內 DateListed 全為此值）",
+      "downloadedAt": "2026-08-18",
+      "updateFrequency": "年（實測資料日期停在 2022-07-25）",
+      "license": "待確認：data.gov.tw 標示為政府資料開放授權條款第1版，但實際下載自 data.cip.gov.tw，該平臺適用「原住民族委員會開放資料使用規範1.0版」。兩者為不同文件，本筆未逐字核對何者適用；模式與 cip-indigenous-education-survey、cip-language-certification-by-language 相同。",
+      "reusable": "unknown",
+      "ourUse": "下載 CSV 至暫存區以確認其列數、欄位與口徑，未納入版本庫、未使用其座標或部落名稱。",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "primary-source",
+      "notes": "★【維度同時對上本站兩個維度】欄位含 族別 與 8 碼鄉鎮市區代碼（例 65000290 新北市烏來區），格式與本站 population-by-township.json 的 district_code 前 8 碼一致，可直接 join。另有村里、鄰、經緯度、X/Y 座標與部落傳統名制（羅馬拼音）。 ★★【口徑限制：只涵蓋 55 個原住民族地區】2026-08-18 實測完整檔案 739 列，鄉鎮市區代碼的不重複值恰為 55 個，與本站 IndigenousDistricts 常數（依《原住民族基本法》第2條由行政院公告的 55 個原住民族地區）數量一致。【原住民族地區以外的部落不在此檔】——不可將本檔的部落數當成全臺部落總數。 ★★【格式陷阱：族別欄位有複合值】20 個不重複值中有 5 個是複合的：「拉阿魯哇族、布農族」(4)、「拉阿魯哇族、卡那卡那富族、布農族」(1)、「泰雅族、賽夏族」(1)、「卡那卡那富族、布農族」(1)、「布農族、鄒族」(1)。直接以此欄位做族別統計會多出 5 個不存在的「族」，且該 8 筆部落會從各單一族的計數中消失。若要按族統計必須先拆分並決定重複計算的處理方式。 ⚠️【資料日期停在 2022-07-25】所有列的 DateListed 相同，標示更新頻率為年但實測已四年未動。 ⚠️【無平埔族群】與 cip-language-certification-by-language 一致，西拉雅、大武壠、馬卡道等均未出現。 ⚠️【與既有來源的關係】可行性研究第B節記載中研院 CAPAS 的 iqTICD 部落開放資料綜合查詢系統（Google My Maps）已提供部落點位，本站不與其競爭視覺化；本筆的價值在於它是機器可讀、帶行政區代碼、可與本站資料 join 的版本。 ⚠️【本檔未入庫】目前不在 data/raw 或 data/processed 中。"
     }
   ]
 }
