@@ -13,6 +13,7 @@
     "updateFrequency": "月 | 季 | 年 | 不定期 | 一次性",
     "license": "授權方式（如政府資料開放授權條款第1版、CC BY 4.0）",
     "reusable": "是否允許再利用 (true | false | unknown)",
+    "ourUse": "本專案【做了什麼】：取得方式、是否改動、是否再散布、是否註明出處。⚠️ 這一欄陳述行為，【不陳述能不能做】——不要寫成「可再利用」這類結論。reusable 記的是本專案對自身用法的判斷（供登記檔內部使用），ourUse 記的是可供讀者對照條款自行判斷的事實。授權本身即明確開放授權者不需填寫（填了也不會呈現）；授權未明確者未填時，頁面只顯示提供者的宣告，不顯示佔位文字。",
     "api": "是否有 API (true | false)",
     "nature": "official-statistic | academic-estimate | derived-by-this-project | historical-record | compilation（混合來源的彙整檔，檔內須逐項標註）",
     "$natureRule": "判準：derived-by-this-project 的定義是【官方從未發布過這個數字】，不是【有沒有經過計算】。例：原住民族人口 637,620 雖需將 ODRP013 的山原/平原/平埔三欄相加才得到，但原民會月報有直接發布此數且本專案已逐一交叉驗證（男308,451/女329,169 相符），故為 official-statistic；反之人口占比 2.74%、每席代表選民數、倍數差距在任何官方文件中都不存在，故為 derived-by-this-project。用『有沒有計算』當判準會把三欄相加也算成本專案計算值，等於對著官方數字宣稱是自己算的，低估其權威性——方向錯得比標錯類別更嚴重。",
@@ -177,6 +178,7 @@
       "notes": "【2026-08-09 更正】原標 official-statistic 為誤：本檔 agency 為『本專案彙整』且檔內含『5萬人推估』(academic-estimate)，單值 nature 標籤蓋不住混合來源，違反 CLAUDE.md 第1條。改標 compilation，檔內須逐項標註。檔中官方事實部分（登記開放前戶籍人口為零）為 official-statistic；『5萬人』出自原民會主秘王美蘋 Akiku．Haisum 轉述專家學者評估（中央社 2026-07-30），為 academic-estimate。記錄的『戶籍人口為零』狀態於 2026-08 中失效且無法回溯重建。 【2026-08-10 補記】部署前授權盤點時發現本筆缺 license 與 reusable 欄位。本檔為本專案自行撰寫之彙整，非下載所得，故專案自身得再散布；檔內引述之新聞與談話其權利仍屬原始來源，引用時已標註出處。",
       "license": "本專案自行彙整；檔內引述之第三方內容，其權利屬各原始來源",
       "reusable": "true",
+      "ourUse": "本檔由本專案自行彙整並納入版本庫；檔內引述的第三方內容逐條註明原始出處，未改寫其文字。",
       "sha256": {
         "siraya-baseline-2026-08-09.md": "60852e3cea68c6cb652ebb99dea9bb7bc04679e0b1fff1b09bbafe1d5d4d9379"
       },
@@ -238,6 +240,7 @@
       "updateFrequency": "月",
       "license": "非開放授權。原民會全球資訊網「政府網站資料開放宣告」：網站內容受著作權法保護，以本會名義公開發表之著作「在合理範圍內，得重製、公開播送或公開傳輸」並註明出處；其餘應取得本會同意或授權。未指名政府資料開放授權條款。",
       "reusable": "true",
+      "ourUse": "自原民會全球資訊網逐頁點擊下載 XLS，未改動內容，逐字納入本專案的公開版本庫並註明出處；未改作、未重新編排、未去除出處。",
       "api": false,
       "nature": "official-statistic",
       "verification": "primary-source",
@@ -437,6 +440,7 @@
       "updateFrequency": "半年（第一輪引述，未經證實）",
       "license": "GNU General Public License (GPL) 3.0",
       "reusable": "unknown",
+      "ourUse": "僅閱讀該資料庫的公開說明頁以了解其涵蓋範圍，未下載檔案、未納入版本庫、未使用其資料。該資料庫標示的 GPL 3.0 是軟體授權，用於資料集時其適用範圍不明，本專案未加以解釋。",
       "api": true,
       "nature": "academic-estimate",
       "verification": "primary-source",
@@ -453,6 +457,7 @@
       "updatedAt": "2025-05-15",
       "license": "無授權宣告（OSF node_license 為 null）",
       "reusable": "false",
+      "ourUse": "僅閱讀該資料庫的公開說明頁以了解其涵蓋範圍，未下載檔案、未納入版本庫、未使用其資料；本專案任何呈現的數字都不來自這裡。",
       "nature": "academic-estimate",
       "verification": "primary-source",
       "notes": "⚠️ 公開可見不等於可再利用。取得明確授權前不得使用。"
@@ -573,6 +578,7 @@
       "updateFrequency": "不定期",
       "license": "待確認：data.gov.tw 標示為政府資料開放授權條款第1版，但本檔實際下載自 data.cip.gov.tw，該平臺適用「原住民族委員會開放資料使用規範1.0版」。兩者為不同文件（見 cip-reserved-land-owner 的 notes），本筆未逐字核對何者適用。",
       "reusable": "unknown",
+      "ourUse": "僅呼叫其公開端點一次以確認資料的實際形式（回傳為 6 筆 PDF 連結清單），未下載任何 PDF、未納入版本庫、未使用其內容。",
       "api": true,
       "nature": "official-statistic",
       "verification": "primary-source",

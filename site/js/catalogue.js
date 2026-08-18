@@ -21,28 +21,27 @@ import { DATA_BASE } from './state.js';
 
 const REGISTRY = 'sources.json';
 
-/* reusable 的三種值各自呈現，unknown 不併入任一端。
-   文案刻意都以「本專案」起頭：這一欄記的是本專案的判斷，不是給讀者的授權。 */
-const REUSE = {
-  true: { label: '本專案判斷可再利用', tone: 'yes' },
-  false: { label: '本專案判斷不可再利用', tone: 'no' },
-  unknown: { label: '本專案尚未判斷', tone: 'unknown' },
-};
+/* 已知的「明確開放授權」文件。命名了其中之一，機關就已經對讀者說了他能做什麼。
+   這份清單刻意只認得具體的授權文件名稱，不做模糊比對——認不得的一律歸入
+   「需要當心」那一側，因為把不清楚的授權誤判成清楚的，代價遠大於反過來。 */
+const PLAIN_GRANTS = [
+  '政府資料開放授權條款',
+  '原住民族委員會開放資料使用規範',
+  '政府法規，公眾得自由利用',
+];
 
-function reuseOf(value) {
-  return REUSE[String(value)] ?? REUSE.unknown;
-}
+/* 出現這些字就不是單純的開放授權，無論同一段裡還提到什麼授權名稱。
+   例：教育調查統計那筆的 license 同時提到「政府資料開放授權條款第1版」
+   與「待確認」——那是兩個平臺說法不一致，不能算清楚。 */
+const NOT_PLAIN = /非開放授權|無授權宣告|待確認/;
 
-/* 授權宣告與再利用判斷是否互相牴觸。
-   判準只用資料本身：宣告文字表明不是開放授權、或根本沒有授權宣告，
-   而本專案仍判斷可再利用——這種組合必須把讀者導向該筆自己的說明，
-   因為「為什麼仍可再利用」的推導只寫在 notes 裡。 */
-function needsReasoning(source) {
-  const notOpen = /非開放授權|無授權宣告/.test(source.license ?? '');
-  /* 注意：reusable 在登記檔中是【字串】'true'/'false'/'unknown'，不是布林，
-     而同檔的 api 卻是真布林。用 === true 比較會永遠不成立，警語就不會出現——
-     而那是靜默失效，畫面看起來完全正常。統一以字串比較。 */
-  return notOpen && String(source.reusable) === 'true';
+/* 這一筆的授權是否為明確開放授權。
+   判準【只讀 license 欄位本身】，不另設一個人工維護的旗標：
+   旗標與授權文字一旦不同步，頁面就會顯示與條款相反的分類，而那不會有任何錯誤訊號。 */
+function isPlainGrant(source) {
+  const lic = source.license ?? '';
+  if (NOT_PLAIN.test(lic)) return false;
+  return PLAIN_GRANTS.some((name) => lic.includes(name));
 }
 
 function el(tag, className, text) {
@@ -80,29 +79,35 @@ function licenceBlock(source) {
   }
   box.append(grant);
 
-  const judgement = el('div', 'cat-licence-part');
-  judgement.append(el('h4', null, '本專案的再利用判斷'));
-  const verdict = reuseOf(source.reusable);
-  const tag = el('p', 'cat-reuse', verdict.label);
-  tag.dataset.tone = verdict.tone;
-  judgement.append(tag);
-  /* 這句對每一筆都成立，不只對牴觸的那幾筆：判斷的射程是本專案的用法，
-     讀者的用途可能更寬（例如改作），那不在這個判斷的涵蓋範圍內。 */
-  judgement.append(el('p', 'cat-reuse-scope',
-    '此為本專案對自身使用方式的判斷，不是提供者給讀者的授權。'
-    + '你的用途若與本專案不同（例如改作、重新編排、去除出處），須自行依授權條款評估。'));
-  if (needsReasoning(source)) {
-    judgement.append(el('p', 'cat-reuse-conflict',
-      '⚠️ 本筆的授權宣告並非開放授權，而本專案仍判斷可再利用——'
-      + '推導過程與其適用範圍記於下方「原始說明」，使用前請讀完該段。'));
+  /* 授權清楚時就到此為止：機關已經說了讀者能做什麼，本專案再加一句
+     只會讓真正需要當心的那幾筆淹沒在一致的版面裡。 */
+  if (isPlainGrant(source)) {
+    box.dataset.plain = 'true';
+    return box;
   }
-  box.append(judgement);
+
+  /* 授權不清楚時，說的是【本專案做了什麼】，不是【能不能做】。
+     一個叫「可再利用」的欄位，旁邊寫再多警語都會被讀成對讀者的許可；
+     一句描述行為的話則要讀者自己拿去對照條款——那一步正是責任轉移的分界。 */
+  if (source.ourUse) {
+    const use = el('div', 'cat-licence-part');
+    use.append(el('h4', null, '本專案做了什麼'));
+    use.append(el('p', 'cat-our-use', source.ourUse));
+    use.append(el('p', 'cat-our-use-note',
+      '這是本專案的實際作法，不是提供者給你的授權。'
+      + '你的用途能不能成立，請拿這段與左側的授權條款自行對照；推導過程見下方「原始說明」。'));
+    box.append(use);
+  }
+  /* ourUse 未填時不補任何文字：在授權這件事上，空欄位的正確處置是不說話，
+     說「未記載」反而像是宣稱本專案審視過而無可奉告。 */
 
   return box;
 }
 
 function sourceEntry(source) {
   const item = el('article', 'cat-entry');
+  /* 需要當心者在版面上要看得出來，讀者不必逐筆展開。 */
+  if (!isPlainGrant(source)) item.dataset.needsCare = 'true';
 
   const head = el('header', 'cat-entry-head');
   head.append(el('h3', null, source.title ?? source.id));
@@ -188,6 +193,11 @@ function summarise(sources) {
   box.append(el('p', 'cat-summary-note',
     '無程式介面者的原因（例如下載連結為不可推導的隨機識別碼、連結由指令碼產生、'
     + '或檔案格式跨期變動）記於各筆的「原始說明」，本頁未將其結構化。'));
+  const care = sources.filter((s) => !isPlainGrant(s)).length;
+  box.append(el('p', 'cat-summary-care',
+    `其中 ${care} 筆的授權不是單純的開放授權——授權被保留、未宣告、`
+    + '以非資料用途的條款涵蓋，或兩個平臺說法不一致。'
+    + '這幾筆另附本專案的實際作法，供你對照條款自行判斷。'));
   return box;
 }
 

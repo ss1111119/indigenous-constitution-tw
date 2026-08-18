@@ -87,6 +87,36 @@ Assert-That -Name '404 頁連向資料目錄與儀表板' `
   -Condition (($nf -match 'href="/indigenous-constitution-tw/"') -and ($nf -match 'href="/indigenous-constitution-tw/dashboard\.html"'))
 
 Write-Host ''
+Write-Host '授權呈現規則'
+# 需要當心的筆數由登記檔導出，不在測試裡寫死——寫死的話，
+# 新增一筆授權不明的來源時測試照樣綠燈，而那正是最需要被提醒的時候。
+$registry = Get-Content (Join-Path $repo 'data/sources.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$plainNames = @('政府資料開放授權條款', '原住民族委員會開放資料使用規範', '政府法規，公眾得自由利用')
+$needCare = @($registry.sources | Where-Object {
+  $lic = "$($_.license)"
+  ($lic -match '非開放授權|無授權宣告|待確認') -or -not ($plainNames | Where-Object { $lic.Contains($_) })
+})
+Write-Host "  （登記檔中授權非明確開放授權者：$($needCare.Count) 筆）"
+
+Assert-That -Name '需要當心者皆已填寫本專案的作法' `
+  -Condition (@($needCare | Where-Object { -not $_.ourUse }).Count -eq 0) `
+  -Detail "未填 ourUse：$(($needCare | Where-Object { -not $_.ourUse } | ForEach-Object { $_.id }) -join '、')"
+
+Assert-That -Name '本專案的作法皆為行為陳述、不含許可性結論' `
+  -Condition (@($needCare | Where-Object { "$($_.ourUse)" -match '可再利用|不可再利用|得再利用' }).Count -eq 0) `
+  -Detail '某筆的 ourUse 含結論性措辭'
+
+# 頁面內容由腳本產生，故此處驗的是【資料與腳本的契約】而非渲染結果：
+# 渲染結果由瀏覽器檢視涵蓋（tasks 4.1）。
+$cat = Get-Content (Join-Path $repo 'site/js/catalogue.js') -Raw -Encoding UTF8
+Assert-That -Name '目錄腳本不再輸出判定性標籤' `
+  -Condition ($cat -notmatch "label: '本專案判斷") `
+  -Detail '腳本仍含「本專案判斷…」的標籤字串'
+Assert-That -Name '目錄腳本由 license 導出是否明確，未新增人工旗標' `
+  -Condition (($cat -match 'function isPlainGrant') -and ($registry.sources[0].PSObject.Properties.Name -notcontains 'licenceIsPlain')) `
+  -Detail '登記檔出現了第二個需人工維護的旗標'
+
+Write-Host ''
 Write-Host '單一資料路徑定義'
 $pages = Get-ChildItem $site -Filter *.html | ForEach-Object { Get-Content $_.FullName -Raw -Encoding UTF8 }
 Assert-That -Name '沒有任何頁面含父層相對資料路徑' `

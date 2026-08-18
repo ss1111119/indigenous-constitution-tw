@@ -110,29 +110,32 @@
 .cat-licence-text { margin: 0 0 0.35rem; line-height: 1.6; }
 .cat-licence-link { font-size: 0.9rem; }
 
-.cat-reuse {
+/* 「本專案做了什麼」是事實陳述，不是判定，所以不上色也不加標籤樣式——
+   任何視覺強調都會把它推回「結論」的讀法。 */
+.cat-our-use {
   margin: 0 0 0.4rem;
-  font-weight: 600;
+  line-height: 1.7;
 }
 
-/* 三種判斷各自可辨。unknown 不套用任一端的顏色——
-   把「尚未判斷」畫成綠或紅，就是替使用者做了一個沒有依據的決定。 */
-.cat-reuse[data-tone="yes"] { color: var(--accent); }
-.cat-reuse[data-tone="no"] { color: var(--gap-warn); }
-.cat-reuse[data-tone="unknown"] {
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.cat-reuse-scope,
-.cat-reuse-conflict {
-  margin: 0 0 0.4rem;
+.cat-our-use-note {
+  margin: 0;
   font-size: 0.88rem;
   line-height: 1.6;
   color: var(--text-muted);
 }
 
-.cat-reuse-conflict { color: var(--gap-warn); }
+/* 授權清楚的條目只有一欄，不需要並排。 */
+.cat-licence[data-plain="true"] { grid-template-columns: 1fr; }
+
+/* 需要當心的條目在清單中看得出來，讀者不必逐筆展開。
+   用左緣色條而非底色：底色會讓它看起來像被標記為「有問題的資料」，
+   但這幾筆的資料本身沒有問題，需要當心的是授權。 */
+.cat-entry[data-needs-care="true"] { border-left: 4px solid var(--accent); }
+
+.cat-summary-care {
+  margin-top: 0.5rem;
+  line-height: 1.6;
+}
 
 .cat-notes { margin-top: 0.9rem; }
 .cat-notes summary { cursor: pointer; color: var(--accent); }
