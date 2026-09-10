@@ -312,6 +312,27 @@
       "sha256Kind": "normalised-data"
     },
     {
+      "id": "moi-odrp013-11508",
+      "title": "現住人口數按性別及原住民身分分（新增區域代碼）ODRP013",
+      "agency": "內政部戶政司",
+      "url": "https://data.gov.tw/dataset/127525",
+      "downloadUrl": "https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP013/11508",
+      "format": "JSON",
+      "dataDate": "2026-08（民國115年8月）",
+      "downloadedAt": "2026-09-10",
+      "updateFrequency": "月",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "unverified",
+      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
+      "sha256": {
+        "moi-odrp013-population-by-indigenous-status-11508.json": "b7a2716cd45bc2de7696176275556d13f0205ed4d3159ef1d8584e7c25dcede1"
+      },
+      "sha256Kind": "normalised-data"
+    },
+    {
       "id": "moi-odrp018-11506",
       "title": "現住原住民人口按性別、身分、原住民族別分（新增區域代碼）ODRP018",
       "agency": "內政部戶政司",
@@ -350,6 +371,27 @@
       "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得，轉檔時的加總自我驗證與變動幅度檢查均已通過。★【2026-08-15 人工交叉驗證通過】與原民會 115年7月月報附件「11507台閩縣市原住民族人口-按性別族別.xls」（RCRPC1F0，發布日 2026-08-14）逐格比對：22 縣市 × (總計+16族+尚未申報) 共 440 格全數相同，無一格差異；全國各族亦相符（阿美 238,027、泰雅 104,052、排灣 116,004、太魯閣 37,477、尚未申報 7,727 等）。⚠️ 比對陷阱與 moi-odrp013-11507 同：同頁的「按族別及年齡統計表」是原民會自行加工的參考表（該頁註明『非內政部戶政司產出之報表，僅參考用』），其全國總計 638,498 與本表差 32 人，不可用於交叉驗證。★★ 該月報族別表仍為 16 族 + 尚未申報，【無任何平埔欄位】——佐證本期 indigenous_pingpu 為 0 是『尚無登記』的事實，見 gap-pingpu-household-population。",
       "sha256": {
         "moi-odrp018-population-by-tribe-11507.json": "2f46463bb4cbd749625ec27795f1f1492e44d3cd25346e43c9196c1e8b2c1621"
+      },
+      "sha256Kind": "normalised-data"
+    },
+    {
+      "id": "moi-odrp018-11508",
+      "title": "現住原住民人口按性別、身分、原住民族別分（新增區域代碼）ODRP018",
+      "agency": "內政部戶政司",
+      "url": "https://www.ris.gov.tw/rs-opendata/api/Main/docs/v1",
+      "downloadUrl": "https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP018/11508",
+      "format": "JSON",
+      "dataDate": "2026-08（民國115年8月）",
+      "downloadedAt": "2026-09-10",
+      "updateFrequency": "月（滯後約2個月）",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "unverified",
+      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
+      "sha256": {
+        "moi-odrp018-population-by-tribe-11508.json": "c15739cdc0ce50494b96b12589099e2d5de188d5b6d4697970048aafd2d23dcd"
       },
       "sha256Kind": "normalised-data"
     },
