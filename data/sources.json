@@ -333,6 +333,27 @@
       "sha256Kind": "normalised-data"
     },
     {
+      "id": "moi-odrp013-11509",
+      "title": "現住人口數按性別及原住民身分分（新增區域代碼）ODRP013",
+      "agency": "內政部戶政司",
+      "url": "https://data.gov.tw/dataset/127525",
+      "downloadUrl": "https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP013/11509",
+      "format": "JSON",
+      "dataDate": "2026-09（民國115年9月）",
+      "downloadedAt": "2026-10-06",
+      "updateFrequency": "月",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "unverified",
+      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
+      "sha256": {
+        "moi-odrp013-population-by-indigenous-status-11509.json": "f8eb3fb837fc94241c8f9563155cab13312dc7d099326a9a0e8b7a851546cd76"
+      },
+      "sha256Kind": "normalised-data"
+    },
+    {
       "id": "moi-odrp018-11506",
       "title": "現住原住民人口按性別、身分、原住民族別分（新增區域代碼）ODRP018",
       "agency": "內政部戶政司",
@@ -392,6 +413,27 @@
       "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
       "sha256": {
         "moi-odrp018-population-by-tribe-11508.json": "c15739cdc0ce50494b96b12589099e2d5de188d5b6d4697970048aafd2d23dcd"
+      },
+      "sha256Kind": "normalised-data"
+    },
+    {
+      "id": "moi-odrp018-11509",
+      "title": "現住原住民人口按性別、身分、原住民族別分（新增區域代碼）ODRP018",
+      "agency": "內政部戶政司",
+      "url": "https://www.ris.gov.tw/rs-opendata/api/Main/docs/v1",
+      "downloadUrl": "https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP018/11509",
+      "format": "JSON",
+      "dataDate": "2026-09（民國115年9月）",
+      "downloadedAt": "2026-10-06",
+      "updateFrequency": "月（滯後約2個月）",
+      "license": "政府資料開放授權條款第1版",
+      "reusable": "true",
+      "api": true,
+      "nature": "official-statistic",
+      "verification": "unverified",
+      "notes": "由排程刷新流程（.github/workflows/refresh-data.yml）自動取得。轉檔時的加總自我驗證與變動幅度檢查均已通過，但【未經人工與原民會月報交叉驗證】——故 verification 記為 unverified。人工核對後可改記並補上核對內容。",
+      "sha256": {
+        "moi-odrp018-population-by-tribe-11509.json": "9a5a4394c520bf3d02fa7615c2d2a65086a5a8c6d3a8fa57796ff889e4df38cf"
       },
       "sha256Kind": "normalised-data"
     },
